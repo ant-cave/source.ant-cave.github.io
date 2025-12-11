@@ -17,17 +17,23 @@
 -->
 
 <script setup lang="ts">
+  import '@/assets/root.css'
 </script>
 
 <template>
-  
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <!-- 路由视图容器 -->
+  <router-view id="full"></router-view>
 </template>
 
 <style scoped>
-  
+  :global(body),
+  :global(html) {
+      margin: 0;
+      padding: 0;
+      /* 移除overflow: hidden，允许滚动查看hello文本 */
+  }
+  .full{
+    height: 100px;
+    width: 100px;
+  }
 </style>

@@ -23,6 +23,7 @@
 <template>
   <!-- 路由视图容器 -->
   <router-view id="full"></router-view>
+  <p>hello<br/>hello</p>
 </template>
 
 <style scoped>

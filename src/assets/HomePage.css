@@ -1,3 +1,21 @@
+/*
+  index.html — Main entry point
+  Copyright (C) 2025 ANTmmmmm <ANTmmmmm@outlook.com>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 
 /* 
  * Hero区域样式 - 主视觉区域
@@ -24,9 +42,46 @@
  * - text-align: 文本居中
  * - padding: 内边距，防止内容贴边
  * - box-sizing: border-box 确保padding不影响元素总尺寸
+ * - position: relative 为白色覆盖层提供定位上下文
  */
 .hero {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 
+ * 图片渐入效果
+ * 作用：让背景图片在1秒内从纯白渐变显示出来
+ * - 使用伪元素创建白色覆盖层
+ * - transition: opacity 1s ease 实现1秒渐变
+ * - 初始状态 opacity: 1（完全白色）
+ * - 加载后通过JS添加类名变为 opacity: 0（透明显示图片）
+ */
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    z-index: 1;
+    opacity: 1;
+    transition: opacity 1s ease;
+    pointer-events: none; /* 防止覆盖层拦截鼠标事件 */
+}
+
+/* 图片加载完成后的状态 - 白色覆盖层渐隐 */
+.hero.image-loaded::before {
+    opacity: 0;
+}
+
+
+.shadow{
+    height: 100%;
+    width: 100%;
+    background-color: white;
 }
 
 .basic-page{
@@ -51,6 +106,8 @@
  * - background: 半透明黑色背景，增强文字可读性
  * - border-radius: 圆角效果，更美观
  * - backdrop-filter: 毛玻璃模糊效果（现代浏览器支持）
+ * - position: relative 确保内容显示在白色覆盖层之上
+ * - z-index: 2 高于白色覆盖层的z-index: 1
  */
 .hero-content {
     max-width: 800px;
@@ -58,6 +115,8 @@
     background: rgba(0, 0, 0, 0.3);
     border-radius: 20px;
     backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 2;
 }
 
 /* 
@@ -97,6 +156,43 @@
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+}
+
+/* 
+ * 按钮样式
+ * 作用：与hero区域设计风格一致的按钮
+ * - 继承hero-content的半透明黑色背景和圆角
+ * - 添加内边距和合适的字体大小
+ * - 平滑的颜色过渡效果
+ * - hover状态增强交互反馈
+ * - 与整体设计保持协调
+ */
+.hero-buttons button {
+    background: rgba(0, 0, 0, 0.4);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(5px);
+}
+
+/* 按钮悬停状态 */
+.hero-buttons button:hover {
+    background: rgba(0, 0, 0, 0.6);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* 按钮点击状态 */
+.hero-buttons button:active {
+    transform: translateY(0);
+    transition: all 0.1s ease;
 }
 
 .next-page{

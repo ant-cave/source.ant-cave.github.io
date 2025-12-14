@@ -198,3 +198,112 @@
 .next-page{
     background-color: #ffffff ;
 }
+
+/* 
+ * 右上角信息区域
+ * 作用：显示背景图片信息和GitHub图标
+ * 位置：固定在右上角，使用flex布局排列元素
+ */
+.top-right-info {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 15px;
+    z-index: 999;
+    max-width: 300px;
+}
+
+/* 
+ * GitHub图标样式
+ * 作用：跳转到GitHub仓库的链接图标
+ * - 使用SVG图标，白色半透明
+ * - hover时增加透明度和轻微放大效果
+ */
+.github-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.github-icon {
+    width: 24px;
+    height: 24px;
+    color: white;
+    opacity: 0.8;
+}
+
+.github-link:hover {
+    background: rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.github-link:hover .github-icon {
+    opacity: 1;
+}
+
+/* 
+ * 背景图片信息区域
+ * 作用：显示图片描述和原图链接
+ * - 半透明黑色背景增强可读性
+ * - 毛玻璃模糊效果
+ * - 圆角和内边距
+ */
+.bg-image-info {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 15px;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+}
+
+.bg-info-text {
+    margin-bottom: 10px;
+    line-height: 1.4;
+    font-size: 0.9rem;
+}
+
+.info-label {
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.info-content {
+    opacity: 0.8;
+}
+
+/* 
+ * 原图来源链接
+ * 作用：跳转到Bing原图的链接
+ * - 样式类似按钮但有区分度
+ * - hover时增强视觉反馈
+ */
+.source-link {
+    display: inline-block;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.source-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}

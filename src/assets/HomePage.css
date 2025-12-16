@@ -202,10 +202,10 @@
 /* 
  * 右上角信息区域
  * 作用：显示背景图片信息和GitHub图标
- * 位置：固定在右上角，使用flex布局排列元素
+ * 位置：背景图片信息使用绝对定位，GitHub图标使用固定定位
  */
 .top-right-info {
-    position: fixed;
+    position: absolute;
     top: 20px;
     right: 20px;
     display: flex;
@@ -217,12 +217,13 @@
 }
 
 /* 
- * GitHub图标样式
- * 作用：跳转到GitHub仓库的链接图标
- * - 使用SVG图标，白色半透明
- * - hover时增加透明度和轻微放大效果
+ * GitHub图标容器 - 固定定位
+ * 作用：使GitHub图标始终停留在屏幕右上角，无论页面滚动
  */
 .github-link {
+    position: fixed;
+    top: 20px;
+    left: 20px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -232,6 +233,7 @@
     border-radius: 50%;
     transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 1000; /* 确保在最上层 */
 }
 
 .github-icon {

@@ -17,7 +17,7 @@
 -->
 
 <script setup lang="ts">
-  import '@/assets/root.css'
+  
 </script>
 
 <template>

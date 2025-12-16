@@ -1,6 +1,7 @@
-:global(body),
-:global(html) {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
+h1{
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }

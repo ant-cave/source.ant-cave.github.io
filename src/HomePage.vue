@@ -31,93 +31,63 @@ const bgInfo = ref({
 onMounted(() => {
     getBackgroundImage()
 })
-
-// 缓存图片方法
-const preloadImage = (src: string): Promise<HTMLImageElement> =>//str: 图片路径
+// 预加载图片 → 确保 background-image 设置时图片已进内存缓存（避免白屏闪动）
+const preloadImage = (src: string): Promise<void> =>
     new Promise((resolve, reject) => {
         const img = new Image();
-        img.onload = () => resolve(img);
+        img.onload = () => resolve();   // 图片下载+解码完成 → 可安全用于 CSS
         img.onerror = reject;
-        img.src = src;
+        img.src = src;                  // 触发加载（若已缓存，onload 瞬间触发）
     });
 
-
-/**
- * 获取必应每日背景图片并设置到页面中
- * 
- * 该函数首先检查本地缓存中是否存在今日的背景图片信息，
- * 如果存在且未过期，则直接使用缓存数据；
- * 否则向必应接口发起请求获取最新背景图，并将结果缓存至 localStorage。
- * 同时更新版权信息和添加图片加载完成后的渐入动画效果。
- */
-const getBackgroundImage = () => {
-    // 检查是否有缓存的背景图URL和时间戳
+// 异步获取背景图：优先用今日缓存，否则请求新图 + 预加载后生效
+const getBackgroundImage = async () => {
+    // 从 localStorage 读取缓存数据（含 URL/时间/版权信息）
     const cachedData = localStorage.getItem('bingBackgroundImage');
     const cachedTime = localStorage.getItem('bingBackgroundImageTime');
     const cachedCopyright = localStorage.getItem('bingBackgroundCopyright');
     const cachedCopyrightLink = localStorage.getItem('bingBackgroundCopyrightLink');
 
+    // 检查缓存是否为今日（忽略时分秒）
     if (cachedData && cachedTime && cachedCopyright && cachedCopyrightLink) {
-        const today = new Date().toDateString(); // 获取今天的日期字符串（忽略时间）
+        const today = new Date().toDateString();
         const cacheDate = new Date(cachedTime).toDateString();
-
-        // 如果缓存日期是今天，使用缓存的URL和信息
         if (today === cacheDate) {
-            console.log('使用缓存的背景图');
-            const el = document.getElementsByClassName("hero")[0];
-            if (el && el instanceof HTMLElement) {
+            console.log('使用今日缓存背景图');
+            await preloadImage(cachedData);  // 必须等图加载完再设背景
+            const el = document.querySelector<HTMLElement>('.hero');
+            if (el) {
                 el.style.backgroundImage = `url(${cachedData})`;
-                // 图片已经缓存，添加渐入效果
-                setTimeout(() => {
-                    el.classList.add('image-loaded');
-                }, 100);
+                el.classList.add('image-loaded'); // 直接触发淡入（此时图已就绪）
             }
-            // 设置缓存的图片信息
-            bgInfo.value = {
-                copyright: cachedCopyright,
-                copyright_link: cachedCopyrightLink
-            };
-            return; // 直接返回，不需要发送请求
+            bgInfo.value = { copyright: cachedCopyright, copyright_link: cachedCopyrightLink };
+            return;
         }
     }
 
-    // 如果没有缓存或缓存过期，发送请求
-    console.log('请求新的背景图');
-    axios({
-        method: 'get',
-        url: 'https://bing.biturl.top'
-    }).then(res => {
-        const obj: string = res.data.url;
-        const copyright: string = res.data.copyright;
-        const copyright_link: string = res.data.copyright_link;
-        console.log('图片信息:', { obj, copyright, copyright_link });
+    // 缓存失效 → 请求新图
+    try {
+        console.log('请求新背景图');
+        const res = await axios.get('https://bing.biturl.top');
+        const { url, copyright, copyright_link } = res.data;
 
-        const el = document.getElementsByClassName("hero")[0]; // 设置背景图片
-        if (el && el instanceof HTMLElement) {
-            el.style.backgroundImage = `url(${obj})`;
-            // 图片加载完成后添加渐入效果
-            setTimeout(() => {
-                el.classList.add('image-loaded');
-            }, 100);
+        await preloadImage(url); //同上：保证图加载完成
+        const el = document.querySelector<HTMLElement>('.hero');
+        if (el) {
+            el.style.backgroundImage = `url(${url})`;
+            el.classList.add('image-loaded');
         }
 
-        // 缓存URL、版权信息和当前时间
-        localStorage.setItem('bingBackgroundImage', obj);
+        // 更新缓存（ISO 时间用于精确过期判断）
+        localStorage.setItem('bingBackgroundImage', url);
         localStorage.setItem('bingBackgroundImageTime', new Date().toISOString());
         localStorage.setItem('bingBackgroundCopyright', copyright);
         localStorage.setItem('bingBackgroundCopyrightLink', copyright_link);
-
-        // 设置图片信息
-        bgInfo.value = {
-            copyright: copyright,
-            copyright_link: copyright_link
-        };
-    }).catch(err => {
-        console.error('获取背景图片失败:', err);
-    })
-}
-
-
+        bgInfo.value = { copyright, copyright_link };
+    } catch (err) {
+        console.error('背景图加载失败', err);
+    }
+};
 const topage2 = () => {
     // 滚动到page-2元素
     const page2 = document.getElementById('page-2');

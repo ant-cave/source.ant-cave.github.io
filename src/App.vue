@@ -17,7 +17,8 @@
 -->
 
 <script setup lang="ts">
-  
+  import "@/assets/colors.css"
+  import "@/assets/privateColors.css"
 </script>
 
 <template>

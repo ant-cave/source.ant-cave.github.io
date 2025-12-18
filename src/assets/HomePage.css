@@ -16,12 +16,6 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-/* 
- * Hero区域样式 - 主视觉区域
- * 这个CSS文件定义了网站的hero区域样式
- * 注意：部分样式会被JavaScript动态修改（如背景图片）
- */
-
 /* 全局重置：移除默认边距，确保hero能全屏显示 */
 :global(body),
 :global(html) {
@@ -46,13 +40,37 @@
     --boxShadow-thin: inset 0 0 0 var(--borderWidth-thin);
 }
 
-hr{
-    margin-top:0.5em;
-    margin-left: 0px;
-    margin-right: 0px;
-    height:0px;
-    margin:0.5em;
-    width:100%
+.hr {
+    margin: 2em 0; /* 只设上下 0.5em，左右 0 */
+    border: 0; /* 清除所有边框 */
+    border-top: 1px solid; /* 仅上边框作分割线 */
+    width: 100%;
+    border-color: gray;
+}
+
+.background-image {
+    position: fixed; /* 固定定位 */
+    top: 0;
+    left: 0;
+    width: 100vw; /* 占据整个视口宽度 */
+    height: 100vh; /* 占据整个视口高度 */
+    z-index: -1; /* 放置于其他元素之下 */
+    background-size: cover; /* 背景图自适应填充 */
+    background-position: center;
+}
+
+.background-image-front {
+    background: linear-gradient(135deg, #a5bbf0 0%, #aaa6f0 100%);
+
+    position: fixed; /* 固定定位 */
+    top: 0;
+    left: 0;
+    width: 100vw; /* 占据整个视口宽度 */
+    height: 100vh; /* 占据整个视口高度 */
+    z-index: -1; /* 放置于其他元素之下 */
+    background-size: cover; /* 背景图自适应填充 */
+    background-position: center;
+    transition: opacity 1000ms ease-in-out;
 }
 
 /* 
@@ -70,9 +88,13 @@ hr{
  * - position: relative 为白色覆盖层提供定位上下文
  */
 .hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     position: relative;
     overflow: hidden;
+}
+
+.para-page {
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
 }
 
 /* 
@@ -90,7 +112,7 @@ hr{
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: white;
+    background-color: rgba(0, 0, 0, 0);
     z-index: 1;
     opacity: 1;
     transition: opacity 1s ease;
@@ -109,7 +131,6 @@ hr{
 }
 
 .basic-page {
-    background-color: var(--white-background);
     width: 100%;
     min-height: 100vh;
     display: flex;
@@ -220,7 +241,7 @@ hr{
     transition: all 0.1s ease;
 }
 
-shadow{
+shadow {
     width: 100%;
     background-color: white;
     height: 50px;
@@ -347,11 +368,16 @@ shadow{
     left: 0px;
     position: absolute;
     padding: 60px;
-    width: calc( 100% - 120px );
+    width: calc(100% - 120px);
 }
 
-#page-2{
+#page-2 {
     text-align: left;
+}
+
+/* 添加淡出效果类 */
+.background-image-front.fade-out {
+    opacity: 0;
 }
 
 .box {
@@ -360,22 +386,22 @@ shadow{
     border-style: solid;
     border-width: var(--borderWidth-thin);
 
-    padding:1em;
-    margin-top:0.75em
+    padding: 1em;
+    margin-top: 0.75em;
 }
-.mainPara{
-    right:60px
+.mainPara {
+    right: 60px;
 }
 
-h2{
+h2 {
     font-size: 3.5em;
-    margin:0px
+    margin: 0px;
 }
 
 .para {
     text-align: left;
 }
 
-.para>p{
+.para > p {
     font-size: 1.5em;
 }

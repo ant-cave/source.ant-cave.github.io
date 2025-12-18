@@ -56,10 +56,17 @@ const getBackgroundImage = async () => {
         if (today === cacheDate) {
             console.log("使用今日缓存背景图");
             await preloadImage(cachedData); // 必须等图加载完再设背景
-            const el = document.querySelector<HTMLElement>(".hero");
+            const el = document.querySelector<HTMLElement>(".background-image");
+            const frontEl = document.querySelector<HTMLElement>(
+                ".background-image-front"
+            );
             if (el) {
                 el.style.backgroundImage = `url(${cachedData})`;
-                el.classList.add("image-loaded"); // 直接触发淡入（此时图已就绪）
+                el.classList.add("image-loaded");
+                // 添加这一行来触发front元素的透明度过渡
+                if (frontEl) {
+                    frontEl.classList.add("fade-out");
+                }
             }
             bgInfo.value = {
                 copyright: cachedCopyright,
@@ -76,10 +83,16 @@ const getBackgroundImage = async () => {
         const { url, copyright, copyright_link } = res.data;
 
         await preloadImage(url); //同上：保证图加载完成
-        const el = document.querySelector<HTMLElement>(".hero");
+        const el = document.querySelector<HTMLElement>(".background-image");
+        const frontEl = document.querySelector<HTMLElement>(
+            ".background-image-front"
+        );
         if (el) {
             el.style.backgroundImage = `url(${url})`;
             el.classList.add("image-loaded");
+            if (frontEl) {
+                frontEl.classList.add("fade-out");
+            }
         }
 
         // 更新缓存（ISO 时间用于精确过期判断）
@@ -107,7 +120,7 @@ const topage2 = () => {
 };
 
 const getImageUrl = () => {
-    const el = document.querySelector<HTMLElement>(".hero"); //获取元素
+    const el = document.querySelector<HTMLElement>(".background-image"); //获取元素
     if (el) {
         const bgImage: string = getComputedStyle(el).backgroundImage;
         if (bgImage) {
@@ -121,13 +134,15 @@ const getImageUrl = () => {
 </script>
 
 <template>
+    <div class="background-image"></div>
+    <div class="background-image-front"></div>
     <div class="hero basic-page">
         <!-- 右上角信息区域 -->
         <div class="top-right-info">
             <!-- 背景图片信息 -->
             <div class="bg-image-info" v-show="bgInfo.copyright">
                 <div class="bg-info-text">
-                    <span class="info-label">背景: </span>
+                    <span class="info-label">背景<br /></span>
                     <span class="info-content">{{ bgInfo.copyright }}</span>
                 </div>
                 <a
@@ -167,6 +182,7 @@ const getImageUrl = () => {
         </div>
 
         <!-- 标题部分-->
+
         <div class="hero-content">
             <h1 class="hero-title">Ant Cave</h1>
             <p class="hero-subtitle">探索未知 创造可能</p>
@@ -176,7 +192,7 @@ const getImageUrl = () => {
             <div class="shadow"></div>
         </div>
     </div>
-    <div class="basic-page" id="page-2">
+    <div class="basic-page para-page" id="page-2">
         <div class="header">
             <div class="container">
                 <h1>这是什么</h1>
@@ -190,7 +206,7 @@ const getImageUrl = () => {
                     </div>
                 </div>
             </div>
-            <hr/>
+            <div class="hr"></div>
 
             <div class="container">
                 <h1>我的项目</h1>

@@ -13,6 +13,8 @@
     --boxShadow-thick: inset 0 0 0 var(--borderWidth-thick);
     --boxShadow-thicker: inset 0 0 0 var(--borderWidth-thicker);
     --boxShadow-thin: inset 0 0 0 var(--borderWidth-thin);
+
+    font-family: 'Consolas','Console','等线';
 }
 
 h1{

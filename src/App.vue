@@ -24,7 +24,9 @@
 <template>
   <!-- 路由视图容器 -->
   <router-view id="full"></router-view>
-  <p>hello<br/>hello</p>
+  <span id="end">
+    router-view end
+  </span>
 </template>
 
 <style scoped>
@@ -37,5 +39,8 @@
   .full{
     height: 100px;
     width: 100px;
+  }
+  #end{
+    background-color: white;
   }
 </style>

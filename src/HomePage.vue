@@ -16,10 +16,18 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
-<script setup lang="ts">
+<script setup>
 import "@/assets/HomePage.css";
+import PageNavButtons from "@/components/PageNavButtons.vue";
 import axios from "axios";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, onUnmounted } from "vue";
+
+// 当前页面索引
+const currentPage = ref(0);
+// 是否正在滚动（防止重复触发）
+const isScrolling = ref(false);
+// 总页面数
+const totalPages = 6;
 
 // 存储背景图片信息的响应式变量
 const bgInfo = ref({
@@ -27,21 +35,113 @@ const bgInfo = ref({
     copyright_link: "",
 });
 
+// 触摸相关
+let touchStartY = 0;
+
 onMounted(() => {
     getBackgroundImage();
+    initScrollSnap();
 });
-// 预加载图片 → 确保 background-image 设置时图片已进内存缓存（避免白屏闪动）
-const preloadImage = (src: string): Promise<void> =>
+
+onUnmounted(() => {
+    removeScrollListeners();
+});
+
+// 初始化滚动吸附
+const initScrollSnap = () => {
+    // 监听滚轮事件
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    // 监听键盘事件
+    window.addEventListener('keydown', handleKeydown);
+    // 监听触摸事件
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+};
+
+const removeScrollListeners = () => {
+    window.removeEventListener('wheel', handleWheel);
+    window.removeEventListener('keydown', handleKeydown);
+    window.removeEventListener('touchstart', handleTouchStart);
+    window.removeEventListener('touchend', handleTouchEnd);
+};
+
+// 滚轮事件处理
+const handleWheel = (e) => {
+    e.preventDefault();
+    if (isScrolling.value) return;
+
+    const delta = e.deltaY;
+    if (delta > 50 && currentPage.value < totalPages - 1) {
+        scrollToPage(currentPage.value + 1);
+    } else if (delta < -50 && currentPage.value > 0) {
+        scrollToPage(currentPage.value - 1);
+    }
+};
+
+// 键盘事件处理
+const handleKeydown = (e) => {
+    if (isScrolling.value) return;
+
+    if ((e.key === 'ArrowDown' || e.key === 'PageDown') && currentPage.value < totalPages - 1) {
+        e.preventDefault();
+        scrollToPage(currentPage.value + 1);
+    } else if ((e.key === 'ArrowUp' || e.key === 'PageUp') && currentPage.value > 0) {
+        e.preventDefault();
+        scrollToPage(currentPage.value - 1);
+    }
+};
+
+// 触摸开始
+const handleTouchStart = (e) => {
+    touchStartY = e.touches[0].clientY;
+};
+
+// 触摸结束
+const handleTouchEnd = (e) => {
+    if (isScrolling.value) return;
+
+    const touchEndY = e.changedTouches[0].clientY;
+    const delta = touchStartY - touchEndY;
+
+    if (delta > 50 && currentPage.value < totalPages - 1) {
+        scrollToPage(currentPage.value + 1);
+    } else if (delta < -50 && currentPage.value > 0) {
+        scrollToPage(currentPage.value - 1);
+    }
+};
+
+// 滚动到指定页面
+const scrollToPage = (pageIndex) => {
+    if (pageIndex < 0 || pageIndex >= totalPages) return;
+
+    isScrolling.value = true;
+    currentPage.value = pageIndex;
+
+    const targetPage = document.getElementById(`page-${pageIndex}`);
+    if (targetPage) {
+        targetPage.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+        });
+    }
+
+    // 滚动动画大约800ms，之后解除锁定
+    setTimeout(() => {
+        isScrolling.value = false;
+    }, 800);
+};
+
+// 预加载图片
+const preloadImage = (src) =>
     new Promise((resolve, reject) => {
         const img = new Image();
-        img.onload = () => resolve(); // 图片下载+解码完成 → 可安全用于 CSS
+        img.onload = () => resolve();
         img.onerror = reject;
-        img.src = src; // 触发加载（若已缓存，onload 瞬间触发）
+        img.src = src;
     });
 
-// 异步获取背景图：优先用今日缓存，否则请求新图 + 预加载后生效
+// 异步获取背景图
 const getBackgroundImage = async () => {
-    // 从 localStorage 读取缓存数据（含 URL/时间/版权信息）
     const cachedData = localStorage.getItem("bingBackgroundImage");
     const cachedTime = localStorage.getItem("bingBackgroundImageTime");
     const cachedCopyright = localStorage.getItem("bingBackgroundCopyright");
@@ -49,21 +149,16 @@ const getBackgroundImage = async () => {
         "bingBackgroundCopyrightLink"
     );
 
-    // 检查缓存是否为今日（忽略时分秒）
     if (cachedData && cachedTime && cachedCopyright && cachedCopyrightLink) {
         const today = new Date().toDateString();
         const cacheDate = new Date(cachedTime).toDateString();
         if (today === cacheDate) {
-            console.log("使用今日缓存背景图");
-            await preloadImage(cachedData); // 必须等图加载完再设背景
-            const el = document.querySelector<HTMLElement>(".background-image");
-            const frontEl = document.querySelector<HTMLElement>(
-                ".background-image-front"
-            );
+            await preloadImage(cachedData);
+            const el = document.querySelector(".background-image");
+            const frontEl = document.querySelector(".background-image-front");
             if (el) {
                 el.style.backgroundImage = `url(${cachedData})`;
                 el.classList.add("image-loaded");
-                // 添加这一行来触发front元素的透明度过渡
                 if (frontEl) {
                     frontEl.classList.add("fade-out");
                 }
@@ -76,17 +171,13 @@ const getBackgroundImage = async () => {
         }
     }
 
-    // 缓存失效 → 请求新图
     try {
-        console.log("请求新背景图");
         const res = await axios.get("https://bing.biturl.top");
         const { url, copyright, copyright_link } = res.data;
 
-        await preloadImage(url); //同上：保证图加载完成
-        const el = document.querySelector<HTMLElement>(".background-image");
-        const frontEl = document.querySelector<HTMLElement>(
-            ".background-image-front"
-        );
+        await preloadImage(url);
+        const el = document.querySelector(".background-image");
+        const frontEl = document.querySelector(".background-image-front");
         if (el) {
             el.style.backgroundImage = `url(${url})`;
             el.classList.add("image-loaded");
@@ -95,12 +186,8 @@ const getBackgroundImage = async () => {
             }
         }
 
-        // 更新缓存（ISO 时间用于精确过期判断）
         localStorage.setItem("bingBackgroundImage", url);
-        localStorage.setItem(
-            "bingBackgroundImageTime",
-            new Date().toISOString()
-        );
+        localStorage.setItem("bingBackgroundImageTime", new Date().toISOString());
         localStorage.setItem("bingBackgroundCopyright", copyright);
         localStorage.setItem("bingBackgroundCopyrightLink", copyright_link);
         bgInfo.value = { copyright, copyright_link };
@@ -108,23 +195,13 @@ const getBackgroundImage = async () => {
         console.error("背景图加载失败", err);
     }
 };
-const topage2 = () => {
-    // 滚动到page-2元素
-    const page2 = document.getElementById("page-2");
-    if (page2) {
-        page2.scrollIntoView({
-            behavior: "smooth", // 平滑滚动
-            block: "start", // 对齐到元素顶部
-        });
-    }
-};
 
 const getImageUrl = () => {
-    const el = document.querySelector<HTMLElement>(".background-image"); //获取元素
+    const el = document.querySelector(".background-image");
     if (el) {
-        const bgImage: string = getComputedStyle(el).backgroundImage;
+        const bgImage = getComputedStyle(el).backgroundImage;
         if (bgImage) {
-            const urlMatch = bgImage.match(/url\("?(.+?)"?\)/);
+            const urlMatch = bgImage.match(/url("?(.+?)"?)/);
             if (urlMatch && urlMatch[1]) {
                 return urlMatch[1];
             }
@@ -136,85 +213,253 @@ const getImageUrl = () => {
 <template>
     <div class="background-image"></div>
     <div class="background-image-front"></div>
-    <div class="hero basic-page">
-        <!-- 右上角信息区域 -->
+
+    <!-- 页面指示器 -->
+    <div class="page-indicator">
+        <div
+            v-for="i in totalPages"
+            :key="i"
+            class="dot"
+            :class="{ active: currentPage === i - 1 }"
+            @click="scrollToPage(i - 1)"
+        ></div>
+    </div>
+
+    <!-- 第1页：首页 -->
+    <div class="hero basic-page" id="page-0">
         <div class="top-right-info">
-            <!-- 背景图片信息 -->
             <div class="bg-image-info" v-show="bgInfo.copyright">
                 <div class="bg-info-text">
                     <span class="info-label">背景<br /></span>
                     <span class="info-content">{{ bgInfo.copyright }}</span>
                 </div>
-                <a
-                    :href="bgInfo.copyright_link"
-                    class="source-link"
-                    target="_blank"
-                    title="查看图片来源"
-                >
-                    原图来源
-                </a>
-                <a
-                    :href="getImageUrl()"
-                    class="source-link"
-                    target="_blank"
-                    title="查看图片来源"
-                >
-                    原图链接
-                </a>
+                <a :href="bgInfo.copyright_link" class="source-link" target="_blank">原图来源</a>
+                <a :href="getImageUrl()" class="source-link" target="_blank">原图链接</a>
             </div>
-            <!-- GitHub图标 -->
-            <a
-                href="https://github.com/ant-cave"
-                class="github-link"
-                target="_blank"
-                title="访问GitHub仓库"
-            >
-                <svg
-                    class="github-icon"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                >
-                    <path
-                        d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
-                    />
-                </svg>
-            </a>
         </div>
 
-        <!-- 标题部分-->
+        <a href="https://github.com/ant-cave" class="github-link" target="_blank" title="访问GitHub仓库">
+            <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+        </a>
 
         <div class="hero-content">
             <h1 class="hero-title">Ant Cave</h1>
             <p class="hero-subtitle">探索未知 创造可能</p>
             <div class="hero-buttons">
-                <button @click="topage2()">▼</button>
+                <button @click="scrollToPage(1)">▼</button>
             </div>
-            <div class="shadow"></div>
         </div>
+
+        <!-- 第1页不需要翻页按钮组件 -->
     </div>
-    <div class="basic-page para-page" id="page-2">
-        <div class="header">
-            <div class="container">
-                <h1>这是什么</h1>
-                <div class="box mainPara">
-                    <div class="para">
-                        <h2>ant-cave的个人主页</h2>
-                        <p>
-                            这是一个个人主页，在这里你可以找到一些关于我的信息，
-                            比如我的个人简介，我的技能，我的项目等等。
-                        </p>
+
+    <!-- 第2页：关于 -->
+    <div class="basic-page para-page light-page" id="page-1">
+        <div class="container">
+            <h1 class="page-title">关于我</h1>
+            <div class="box mainPara">
+                <div class="para">
+                    <h2>深圳高中生开发者</h2>
+                    <p>喜欢写一些实用的小工具，正在学习各种技术。热衷于开源项目和技术分享。</p>
+                </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <h1 class="page-title">我的项目</h1>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <h3>腾讯漫画下载工具</h3>
+                    <p>Python 开发的腾讯动漫下载器，支持批量下载、多线程加速和自动重试。</p>
+                    <div class="project-tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">requests</span>
+                        <span class="tag">quickjs</span>
+                    </div>
+                    <a href="https://github.com/ant-cave/tencentComicDownloadTool" target="_blank" class="project-link">查看详情 →</a>
+                </div>
+                <div class="project-card">
+                    <h3>TOTP 密码管理器</h3>
+                    <p>本地化的双因素验证码管理工具，AES 加密存储，支持自动刷新和主题切换。</p>
+                    <div class="project-tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">PySide6</span>
+                        <span class="tag">cryptography</span>
+                    </div>
+                    <a href="https://github.com/ant-cave/py-totp-new" target="_blank" class="project-link">查看详情 →</a>
+                </div>
+                <div class="project-card">
+                    <h3>Minecraft 服务器唤醒插件</h3>
+                    <p>Minecraft 服务器状态监控与自动唤醒插件，支持 Wake-on-LAN 和自动传送。</p>
+                    <div class="project-tags">
+                        <span class="tag">Java</span>
+                        <span class="tag">Spigot</span>
+                        <span class="tag">BungeeCord</span>
+                    </div>
+                    <a href="https://github.com/ant-cave/eco_wake_sleep_sub" target="_blank" class="project-link">查看详情 →</a>
+                </div>
+                <div class="project-card">
+                    <h3>蓝牙设备客户端</h3>
+                    <p>与团队合作开发的蓝牙 Cpen 设备桌面客户端，用于获取 TOTP 和设备 ID。</p>
+                    <div class="project-tags">
+                        <span class="tag">Tauri</span>
+                        <span class="tag">Vue 3</span>
+                        <span class="tag">Rust</span>
+                    </div>
+                    <a href="https://github.com/CloudAIMultiFunctionClicker/CAMFC-client" target="_blank" class="project-link">查看详情 →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第2页翻页按钮 - 亮色主题 -->
+        <PageNavButtons
+            :current-page="1"
+            :total-pages="totalPages"
+            theme="light"
+            @navigate="scrollToPage"
+        />
+    </div>
+
+    <!-- 第3页：科技风格开始 - 技能 -->
+    <div class="basic-page tech-page" id="page-2">
+        <div class="container">
+            <h1 class="page-title tech-title">技术栈</h1>
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <i class="tech-icon ri-file-python-line"></i>
+                    <h3>Python</h3>
+                    <p>主要开发语言，用于工具和桌面应用开发</p>
+                </div>
+                <div class="tech-card">
+                    <i class="tech-icon ri-code-line"></i>
+                    <h3>前端</h3>
+                    <p>Vue 3 / TypeScript</p>
+                </div>
+                <div class="tech-card">
+                    <i class="tech-icon ri-terminal-box-line"></i>
+                    <h3>Rust</h3>
+                    <p>Tauri 桌面应用开发</p>
+                </div>
+                <div class="tech-card">
+                    <i class="tech-icon ri-robot-line"></i>
+                    <h3>Java</h3>
+                    <p>Minecraft 插件开发</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第3页翻页按钮 - 暗色主题 -->
+        <PageNavButtons
+            :current-page="2"
+            :total-pages="totalPages"
+            theme="dark"
+            @navigate="scrollToPage"
+        />
+    </div>
+
+    <!-- 第4页：经历 -->
+    <div class="basic-page tech-page" id="page-3">
+        <div class="container">
+            <h1 class="page-title tech-title">经历</h1>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3>2026 - 至今</h3>
+                        <p>参与 CloudAI 团队项目，学习 Rust 和 Tauri 开发</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3>2025</h3>
+                        <p>开发 TOTP 密码管理器，开始接触开源</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3>2024</h3>
+                        <p>Minecraft 插件开发，开始做实用工具</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3>2022</h3>
+                        <p>开始学习 Java，深入了解编程</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3>2020</h3>
+                        <p>第一次接触 Python，从此入坑编程</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3>未来</h3>
+                        <p>继续探索，持续学习新技术</p>
                     </div>
                 </div>
             </div>
-            <div class="hr"></div>
+        </div>
 
-            <div class="container">
-                <h1>我的项目</h1>
-                <div class="box mainPara">
-                    <div class="para"></div>
-                </div>
+        <!-- 第4页翻页按钮 - 暗色主题 -->
+        <PageNavButtons
+            :current-page="3"
+            :total-pages="totalPages"
+            theme="dark"
+            @navigate="scrollToPage"
+        />
+    </div>
+
+    <!-- 第5页：联系 -->
+    <div class="basic-page tech-page" id="page-4">
+        <div class="container">
+            <h1 class="page-title tech-title">联系</h1>
+            <div class="contact-grid">
+                <a href="mailto:ANTmmmmm@outlook.com" class="contact-card">
+                    <i class="contact-icon ri-mail-line"></i>
+                    <h3>邮箱</h3>
+                    <p>ANTmmmmm@outlook.com</p>
+                </a>
+                <a href="https://github.com/ant-cave" target="_blank" class="contact-card">
+                    <i class="contact-icon ri-github-line"></i>
+                    <h3>GitHub</h3>
+                    <p>@ant-cave</p>
+                </a>
             </div>
         </div>
+
+        <!-- 第5页翻页按钮 - 暗色主题 -->
+        <PageNavButtons
+            :current-page="4"
+            :total-pages="totalPages"
+            theme="dark"
+            @navigate="scrollToPage"
+        />
+    </div>
+
+    <!-- 第6页：页脚 -->
+    <div class="basic-page tech-page footer-page" id="page-5">
+        <div class="footer-content">
+            <h1 class="footer-title">Ant Cave</h1>
+            <p class="footer-text">© 2025 Ant Cave. 使用 AGPL-3.0 许可证开源。</p>
+            <p class="footer-text">探索未知 创造可能</p>
+        </div>
+
+        <!-- 第6页翻页按钮 - 暗色主题 -->
+        <PageNavButtons
+            :current-page="5"
+            :total-pages="totalPages"
+            theme="dark"
+            @navigate="scrollToPage"
+        />
     </div>
 </template>
 

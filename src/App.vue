@@ -16,7 +16,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
-<script setup lang="ts">
+<script setup>
   import "@/assets/colors.css"
   import "@/assets/privateColors.css"
 </script>

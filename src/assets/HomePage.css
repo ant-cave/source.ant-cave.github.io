@@ -16,246 +16,177 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-/* 全局重置：移除默认边距，确保hero能全屏显示 */
+/* 全局重置 */
 :global(body),
 :global(html) {
     margin: 0;
     padding: 0;
+    overflow: hidden;
+    scroll-behavior: smooth;
 }
 
+/* 颜色变量 - 统一配色方案 */
 :root {
-    --borderRadius-full: 624.9375rem;
-    --borderRadius-large: 0.75rem;
-    --borderRadius-medium: 0.375rem;
-    --borderRadius-small: 0.1875rem;
-    --borderWidth-thick: 0.125rem;
-    --borderWidth-thicker: 0.25rem;
-    --borderWidth-thin: 0.0625rem;
-    --outline-focus-offset: -0.125rem;
-    --outline-focus-width: 0.125rem;
-    --borderRadius-default: var(--borderRadius-medium);
-    --borderWidth-default: var(--borderWidth-thin);
-    --boxShadow-thick: inset 0 0 0 var(--borderWidth-thick);
-    --boxShadow-thicker: inset 0 0 0 var(--borderWidth-thicker);
-    --boxShadow-thin: inset 0 0 0 var(--borderWidth-thin);
+    /* 主色调 - 灰绿系，避免蓝紫 */
+    --primary-dark: #2d3436;
+    --primary-gray: #636e72;
+    --primary-light: #b2bec3;
+    --accent-green: #00b894;
+    --accent-teal: #00cec9;
+    --accent-orange: #e17055;
+
+    /* 亮色页面 */
+    --light-bg: #f5f6fa;
+    --light-card: #ffffff;
+    --light-text: #2d3436;
+    --light-text-secondary: #636e72;
+    --light-border: #dfe6e9;
+
+    /* 暗色页面 - 科技风格 */
+    --dark-bg: #0a0a0a;
+    --dark-card: #141414;
+    --dark-text: #ffffff;
+    --dark-text-secondary: #a0a0a0;
+    --dark-border: #2a2a2a;
+    --tech-glow: rgba(0, 184, 148, 0.3);
+
+    /* 通用 */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
-.hr {
-    margin: 2em 0; /* 只设上下 0.5em，左右 0 */
-    border: 0; /* 清除所有边框 */
-    border-top: 1px solid; /* 仅上边框作分割线 */
-    width: 100%;
-    border-color: gray;
-}
-
+/* 背景图片 */
 .background-image {
-    position: fixed; /* 固定定位 */
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100vw; /* 占据整个视口宽度 */
-    height: 100vh; /* 占据整个视口高度 */
-    z-index: -1; /* 放置于其他元素之下 */
-    background-size: cover; /* 背景图自适应填充 */
+    width: 100vw;
+    height: 100vh;
+    z-index: -2;
+    background-size: cover;
     background-position: center;
 }
 
 .background-image-front {
-    background: linear-gradient(135deg, #a5bbf0 0%, #aaa6f0 100%);
-
-    position: fixed; /* 固定定位 */
+    background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100vw; /* 占据整个视口宽度 */
-    height: 100vh; /* 占据整个视口高度 */
-    z-index: -1; /* 放置于其他元素之下 */
-    background-size: cover; /* 背景图自适应填充 */
-    background-position: center;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
     transition: opacity 1000ms ease-in-out;
 }
 
-/* 
- * Hero容器样式
- * 作用：创建全屏的视觉焦点区域
- * - width: 100% 宽度占满整个屏幕
- * - min-height: 100vh 最小高度为视窗高度（确保全屏显示）
- * - background: 默认的渐变背景（会被JS替换为Bing每日图片）
- * - display: flex 使用弹性布局
- * - justify-content/align-items: 水平和垂直居中内容
- * - color: 文字颜色为白色
- * - text-align: 文本居中
- * - padding: 内边距，防止内容贴边
- * - box-sizing: border-box 确保padding不影响元素总尺寸
- * - position: relative 为白色覆盖层提供定位上下文
- */
-.hero {
-    position: relative;
-    overflow: hidden;
-}
-
-.para-page {
-    background-color: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-}
-
-/* 
- * 图片渐入效果
- * 作用：让背景图片在1秒内从纯白渐变显示出来
- * - 使用伪元素创建白色覆盖层
- * - transition: opacity 1s ease 实现1秒渐变
- * - 初始状态 opacity: 1（完全白色）
- * - 加载后通过JS添加类名变为 opacity: 0（透明显示图片）
- */
-.hero::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0);
-    z-index: 1;
-    opacity: 1;
-    transition: opacity 1s ease;
-    pointer-events: none; /* 防止覆盖层拦截鼠标事件 */
-}
-
-/* 图片加载完成后的状态 - 白色覆盖层渐隐 */
-.hero.image-loaded::before {
+.background-image-front.fade-out {
     opacity: 0;
 }
 
-.shadow {
-    height: 100%;
-    width: 100%;
-    background-color: white;
+/* 页面指示器 */
+.page-indicator {
+    position: fixed;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 1000;
 }
 
+.page-indicator .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.page-indicator .dot:hover {
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(1.2);
+}
+
+.page-indicator .dot.active {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    transform: scale(1.3);
+}
+
+/* 基础页面 */
 .basic-page {
     width: 100%;
+    height: 100vh;
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-
     text-align: center;
     padding: 20px;
     box-sizing: border-box;
     position: relative;
+    overflow: hidden;
 }
 
-/* 
- * Hero内容容器
- * 作用：承载标题、副标题等内容的盒子
- * - max-width: 限制最大宽度，避免在大屏幕上内容过宽
- * - padding: 内边距，让内容有呼吸空间
- * - background: 半透明黑色背景，增强文字可读性
- * - border-radius: 圆角效果，更美观
- * - backdrop-filter: 毛玻璃模糊效果（现代浏览器支持）
- * - position: relative 确保内容显示在白色覆盖层之上
- * - z-index: 2 高于白色覆盖层的z-index: 1
- */
+/* 首页 */
+.hero {
+    position: relative;
+}
+
 .hero-content {
     color: white;
     max-width: 800px;
     padding: 40px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
     position: relative;
     z-index: 2;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* 
- * 主标题样式
- * 作用：突出显示网站名称/主标题
- * - font-size: 大字体，视觉重点
- * - font-weight: 粗体，加强强调
- * - margin-bottom: 与下方元素保持距离
- * - line-height: 行高，影响文字垂直间距
- * - text-transform: 转换为大写字母（设计选择）
- * - letter-spacing: 字母间距，增加可读性
- */
 .hero-title {
-    font-size: 3.5rem;
+    font-size: 4rem;
     font-weight: 700;
     margin-bottom: 20px;
     line-height: 1.2;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 4px;
+    color: white;
 }
 
-/* 
- * 副标题样式
- * 作用：补充说明或宣传语
- * - font-size: 适中大小，比主标题小
- * - margin-bottom: 与下方按钮区域保持距离
- * - opacity: 轻微透明，视觉层次低于主标题
- * - line-height: 行高，确保多行文本可读
- * - max-width: 限制宽度，避免文字行过长
- * - margin-left/right: auto 水平居中
- */
 .hero-subtitle {
     font-size: 1.5rem;
     margin-bottom: 40px;
     opacity: 0.9;
     line-height: 1.6;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+    color: rgba(255, 255, 255, 0.9);
 }
 
-/* 
- * 按钮样式
- * 作用：与hero区域设计风格一致的按钮
- * - 继承hero-content的半透明黑色背景和圆角
- * - 添加内边距和合适的字体大小
- * - 平滑的颜色过渡效果
- * - hover状态增强交互反馈
- * - 与整体设计保持协调
- */
 .hero-buttons button {
-    background: rgba(0, 0, 0, 0.4);
+    background: transparent;
     color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.4);
     padding: 12px 30px;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     border-radius: 50px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--transition-normal);
     font-weight: 500;
-    letter-spacing: 0.5px;
-    backdrop-filter: blur(5px);
+    letter-spacing: 1px;
 }
 
-/* 按钮悬停状态 */
 .hero-buttons button:hover {
-    background: rgba(0, 0, 0, 0.6);
-    border-color: rgba(255, 255, 255, 0.5);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    color: white;
 }
 
-/* 按钮点击状态 */
-.hero-buttons button:active {
-    transform: translateY(0);
-    transition: all 0.1s ease;
-}
-
-shadow {
-    width: 100%;
-    background-color: white;
-    height: 50px;
-}
-
-.next-page {
-    background-color: #ffffff;
-}
-
-/* 
- * 右上角信息区域
- * 作用：显示背景图片信息和GitHub图标
- * 位置：背景图片信息使用绝对定位，GitHub图标使用固定定位
- */
+/* 右上角信息 */
 .top-right-info {
     position: absolute;
     top: 20px;
@@ -268,58 +199,13 @@ shadow {
     max-width: 300px;
 }
 
-/* 
- * GitHub图标容器 - 固定定位
- * 作用：使GitHub图标始终停留在屏幕右上角，无论页面滚动
- */
-.github-link {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 50%;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    z-index: 1000; /* 确保在最上层 */
-}
-
-.github-icon {
-    width: 24px;
-    height: 24px;
-    color: white;
-    opacity: 0.8;
-}
-
-.github-link:hover {
-    background: rgba(0, 0, 0, 0.5);
-    transform: scale(1.1);
-    border-color: rgba(255, 255, 255, 0.4);
-}
-
-.github-link:hover .github-icon {
-    opacity: 1;
-}
-
-/* 
- * 背景图片信息区域
- * 作用：显示图片描述和原图链接
- * - 半透明黑色背景增强可读性
- * - 毛玻璃模糊效果
- * - 圆角和内边距
- */
 .bg-image-info {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
     border-radius: 12px;
     padding: 15px;
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     max-width: 100%;
 }
 
@@ -338,12 +224,6 @@ shadow {
     opacity: 0.8;
 }
 
-/* 
- * 原图来源链接
- * 作用：跳转到Bing原图的链接
- * - 样式类似按钮但有区分度
- * - hover时增强视觉反馈
- */
 .source-link {
     margin: 2px;
     display: inline-block;
@@ -353,55 +233,406 @@ shadow {
     text-decoration: none;
     border-radius: 6px;
     font-size: 0.85rem;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .source-link:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
+    background: var(--accent-green);
+    border-color: var(--accent-green);
 }
 
-.header {
-    top: 0px;
-    left: 0px;
-    position: absolute;
-    padding: 60px;
-    width: calc(100% - 120px);
+/* GitHub链接 */
+.github-link {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    transition: all var(--transition-normal);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 1000;
 }
 
-#page-2 {
-    text-align: left;
+.github-icon {
+    width: 24px;
+    height: 24px;
+    color: white;
+    opacity: 0.9;
 }
 
-/* 添加淡出效果类 */
-.background-image-front.fade-out {
-    opacity: 0;
+.github-link:hover {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    transform: scale(1.1);
+}
+
+.github-link:hover .github-icon {
+    opacity: 1;
+}
+
+/* 亮色页面 */
+.light-page {
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    color: var(--light-text);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    width: 100%;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--light-text);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.hr {
+    margin: 2em 0;
+    border: 0;
+    border-top: 1px solid var(--light-border);
+    width: 100%;
 }
 
 .box {
-    border-color: var(--borderColor-default);
-    border-radius: var(--borderRadius-medium);
-    border-style: solid;
-    border-width: var(--borderWidth-thin);
-
-    padding: 1em;
+    border: 1px solid var(--light-border);
+    border-radius: 12px;
+    padding: 1.5em;
     margin-top: 0.75em;
-}
-.mainPara {
-    right: 60px;
-}
-
-h2 {
-    font-size: 3.5em;
-    margin: 0px;
+    background: var(--light-card);
 }
 
 .para {
     text-align: left;
 }
 
-.para > p {
-    font-size: 1.5em;
+.para h2 {
+    font-size: 2em;
+    margin: 0 0 0.5em 0;
+    color: var(--light-text);
+}
+
+.para p {
+    font-size: 1.1em;
+    color: var(--light-text-secondary);
+    line-height: 1.6;
+}
+
+/* 项目卡片 - 移除hover移动，改用边框和阴影 */
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.project-card {
+    background: var(--light-card);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-light);
+    transition: all var(--transition-normal);
+    border: 2px solid transparent;
+    text-align: left;
+}
+
+.project-card:hover {
+    border-color: var(--accent-green);
+    box-shadow: var(--shadow-hover);
+}
+
+.project-card h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    color: var(--light-text);
+}
+
+.project-card p {
+    color: var(--light-text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.tag {
+    background: #f0f4f8;
+    color: var(--primary-gray);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    border: 1px solid var(--light-border);
+}
+
+.project-link {
+    color: var(--accent-green);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--transition-fast);
+}
+
+.project-link:hover {
+    color: var(--primary-dark);
+}
+
+/* 科技风格页面 - 从第3页开始 */
+.tech-page {
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
+}
+
+.tech-title {
+    color: var(--dark-text);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    position: relative;
+    display: inline-block;
+}
+
+.tech-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--accent-green);
+}
+
+/* 技术卡片 */
+.tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.tech-card {
+    background: var(--dark-card);
+    border: 1px solid var(--dark-border);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all var(--transition-normal);
+}
+
+.tech-card:hover {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 20px var(--tech-glow);
+}
+
+.tech-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+/* 技术栈图标颜色 - 各语言官方配色 */
+.ri-python-line,
+.ri-file-python-line {
+    color: #3776AB;
+}
+
+.ri-code-line {
+    color: #4FC08D;
+}
+
+.ri-terminal-box-line {
+    color: #CE422B;
+}
+
+.ri-robot-line {
+    color: #007396;
+}
+
+.tech-card h3 {
+    color: var(--dark-text);
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+}
+
+.tech-card p {
+    color: var(--dark-text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* 时间线 */
+.timeline {
+    position: relative;
+    max-width: 600px;
+    margin: 2rem auto;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--dark-border);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+    padding-left: 2rem;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -2rem;
+    top: 0.5rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--dark-border);
+    border: 2px solid var(--accent-green);
+    transform: translateX(-5px);
+    transition: all var(--transition-normal);
+}
+
+.timeline-item:hover .timeline-dot {
+    background: var(--accent-green);
+    box-shadow: 0 0 10px var(--tech-glow);
+}
+
+.timeline-content h3 {
+    color: var(--accent-green);
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.timeline-content p {
+    color: var(--dark-text-secondary);
+    margin: 0;
+}
+
+/* 联系卡片 */
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.contact-card {
+    background: var(--dark-card);
+    border: 1px solid var(--dark-border);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    text-decoration: none;
+    transition: all var(--transition-normal);
+    display: block;
+}
+
+.contact-card:hover {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 20px var(--tech-glow);
+}
+
+.contact-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+/* 联系图标颜色 */
+.ri-mail-line {
+    color: var(--accent-green);
+}
+
+.ri-github-line {
+    color: #333333;
+}
+
+.contact-card h3 {
+    color: var(--dark-text);
+    margin: 0 0 0.5rem 0;
+}
+
+.contact-card p {
+    color: var(--dark-text-secondary);
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* 页脚页面 */
+.footer-page {
+    background: linear-gradient(180deg, var(--dark-bg) 0%, #000000 100%);
+}
+
+.footer-content {
+    text-align: center;
+}
+
+.footer-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--dark-text);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+}
+
+.footer-text {
+    color: var(--dark-text-secondary);
+    margin: 0.5rem 0;
+    font-size: 1rem;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .page-title,
+    .tech-title {
+        font-size: 1.8rem;
+    }
+
+    .projects-grid,
+    .tech-grid,
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .page-indicator {
+        right: 15px;
+    }
+
+    .page-indicator .dot {
+        width: 8px;
+        height: 8px;
+    }
 }

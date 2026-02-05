@@ -242,11 +242,18 @@
     border-color: var(--accent-green);
 }
 
-/* GitHub链接 */
-.github-link {
+/* 顶部链接区 —— blog和GitHub放一起 */
+.top-links {
     position: fixed;
     top: 20px;
     left: 20px;
+    display: flex;
+    gap: 12px; /* 两个图标之间的间距 */
+    z-index: 1000;
+}
+
+/* blog链接 —— 放在GitHub前面 */
+.blog-link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -256,7 +263,36 @@
     border-radius: 50%;
     transition: all var(--transition-normal);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    z-index: 1000;
+}
+
+.blog-icon {
+    width: 22px; /* 稍微小一点，看起来协调 */
+    height: 22px;
+    color: white;
+    opacity: 0.9;
+}
+
+.blog-link:hover {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    transform: scale(1.1);
+}
+
+.blog-link:hover .blog-icon {
+    opacity: 1;
+}
+
+/* GitHub链接 */
+.github-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    transition: all var(--transition-normal);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .github-icon {
@@ -346,6 +382,9 @@
     transition: all var(--transition-normal);
     border: 2px solid transparent;
     text-align: left;
+    text-decoration: none; /* 去掉a标签的下划线 */
+    color: inherit; /* 继承文字颜色 */
+    display: block; /* a标签默认是inline，改成block */
 }
 
 .project-card:hover {
@@ -391,6 +430,13 @@
 
 .project-link:hover {
     color: var(--primary-dark);
+}
+
+/* 多个链接并排 */
+.project-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 /* 科技风格页面 - 从第3页开始 */
@@ -816,10 +862,24 @@
         font-size: 0.7rem;
     }
 
-    /* GitHub链接 */
-    .github-link {
+    /* 顶部链接区 —— 手机端紧凑点 */
+    .top-links {
         top: 10px;
         left: 10px;
+        gap: 8px;
+    }
+
+    .blog-link {
+        width: 36px;
+        height: 36px;
+    }
+
+    .blog-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .github-link {
         width: 36px;
         height: 36px;
     }

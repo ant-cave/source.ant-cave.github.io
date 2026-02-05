@@ -84,6 +84,34 @@
     opacity: 0;
 }
 
+/* 背景遮罩层 —— 固定不动，通过透明度渐变切换 */
+.background-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    transition: background-color 600ms ease-in-out;
+    pointer-events: none;
+}
+
+/* 第1页：透明，显示原背景图 */
+.background-overlay.overlay-transparent {
+    background-color: transparent;
+}
+
+/* 第2页：半透明白色遮罩 */
+.background-overlay.overlay-light {
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+}
+
+/* 第3页及以后：黑色遮罩 */
+.background-overlay.overlay-dark {
+    background-color: rgba(10, 10, 10, 0.95);
+}
+
 /* 页面指示器 */
 .page-indicator {
     position: fixed;
@@ -312,10 +340,9 @@
     opacity: 1;
 }
 
-/* 亮色页面 */
+/* 亮色页面 —— 背景交给遮罩层控制 */
 .light-page {
-    background-color: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(10px);
+    background-color: transparent;
     color: var(--light-text);
 }
 
@@ -439,9 +466,9 @@
     flex-wrap: wrap;
 }
 
-/* 科技风格页面 - 从第3页开始 */
+/* 科技风格页面 - 背景交给遮罩层控制 */
 .tech-page {
-    background-color: var(--dark-bg);
+    background-color: transparent;
     color: var(--dark-text);
 }
 
@@ -631,9 +658,9 @@
     font-size: 0.9rem;
 }
 
-/* 页脚页面 */
+/* 页脚页面 —— 背景交给遮罩层控制 */
 .footer-page {
-    background: linear-gradient(180deg, var(--dark-bg) 0%, #000000 100%);
+    background: transparent;
 }
 
 .footer-content {

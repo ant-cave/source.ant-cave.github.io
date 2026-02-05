@@ -230,6 +230,15 @@ const getImageUrl = () => {
 <template>
     <div class="background-image"></div>
     <div class="background-image-front"></div>
+    <!-- 背景遮罩层 —— 根据页面切换不同遮罩效果 -->
+    <div
+        class="background-overlay"
+        :class="{
+            'overlay-transparent': currentPage === 0,
+            'overlay-light': currentPage === 1,
+            'overlay-dark': currentPage >= 2
+        }"
+    ></div>
 
     <!-- 页面指示器 -->
     <div class="page-indicator">

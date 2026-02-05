@@ -65,17 +65,33 @@ const removeScrollListeners = () => {
     window.removeEventListener('touchend', handleTouchEnd);
 };
 
-// 滚轮事件处理
+// 滚轮事件处理 —— 加个累积值防止轻微滚动就翻页
+let wheelAccumulate = 0;
+const WHEEL_THRESHOLD = 120; // 阈值调大一点，更稳
+
 const handleWheel = (e) => {
     e.preventDefault();
-    if (isScrolling.value) return;
+    if (isScrolling.value) {
+        wheelAccumulate = 0; // 正在滚动时重置
+        return;
+    }
 
-    const delta = e.deltaY;
-    if (delta > 50 && currentPage.value < totalPages - 1) {
+    wheelAccumulate += e.deltaY;
+
+    // 累积超过阈值才翻页
+    if (wheelAccumulate > WHEEL_THRESHOLD && currentPage.value < totalPages - 1) {
+        wheelAccumulate = 0;
         scrollToPage(currentPage.value + 1);
-    } else if (delta < -50 && currentPage.value > 0) {
+    } else if (wheelAccumulate < -WHEEL_THRESHOLD && currentPage.value > 0) {
+        wheelAccumulate = 0;
         scrollToPage(currentPage.value - 1);
     }
+
+    // 300ms没新滚轮事件就重置累积值
+    clearTimeout(window.wheelTimer);
+    window.wheelTimer = setTimeout(() => {
+        wheelAccumulate = 0;
+    }, 300);
 };
 
 // 键盘事件处理
@@ -96,16 +112,17 @@ const handleTouchStart = (e) => {
     touchStartY = e.touches[0].clientY;
 };
 
-// 触摸结束
+// 触摸结束 —— 阈值调到80，防止轻微滑动就翻页
 const handleTouchEnd = (e) => {
     if (isScrolling.value) return;
 
     const touchEndY = e.changedTouches[0].clientY;
     const delta = touchStartY - touchEndY;
+    const TOUCH_THRESHOLD = 80;
 
-    if (delta > 50 && currentPage.value < totalPages - 1) {
+    if (delta > TOUCH_THRESHOLD && currentPage.value < totalPages - 1) {
         scrollToPage(currentPage.value + 1);
-    } else if (delta < -50 && currentPage.value > 0) {
+    } else if (delta < -TOUCH_THRESHOLD && currentPage.value > 0) {
         scrollToPage(currentPage.value - 1);
     }
 };

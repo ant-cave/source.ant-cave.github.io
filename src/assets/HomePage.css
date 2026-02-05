@@ -649,23 +649,78 @@
 
     .page-title,
     .tech-title {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         letter-spacing: 1px;
+        margin-bottom: 0.75rem;
     }
 
-    /* 项目卡片 */
+    /* 关于页面容器 —— 手机端紧凑点 */
+    .para-page .container {
+        display: flex;
+        flex-direction: column;
+        max-height: 85vh; /* 留空间给按钮 */
+    }
+
+    .para-page .box {
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    .para-page .para h2 {
+        font-size: 1.1rem;
+    }
+
+    .para-page .para p {
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+
+    .para-page .hr {
+        margin: 1rem 0;
+    }
+
+    /* 项目卡片 —— 手机端太多塞不下，加个滚动区域 */
     .projects-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
-        margin-top: 1rem;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+        max-height: 45vh; /* 限制高度，别挡住按钮 */
+        overflow-y: auto;
+        padding-right: 0.5rem; /* 给滚动条留点空间 */
+    }
+
+    /* 滚动条样式稍微美化下 */
+    .projects-grid::-webkit-scrollbar {
+        width: 4px;
+    }
+    .projects-grid::-webkit-scrollbar-thumb {
+        background: var(--light-border);
+        border-radius: 2px;
     }
 
     .project-card {
-        padding: 1rem;
+        padding: 0.875rem;
+        flex-shrink: 0; /* 防止被压缩 */
     }
 
     .project-card h3 {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .project-card p {
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+    }
+
+    .project-tags {
+        margin-bottom: 0.5rem;
+    }
+
+    .tag {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
     }
 
     /* 技术卡片 */

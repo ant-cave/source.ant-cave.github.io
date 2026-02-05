@@ -10,13 +10,30 @@
       rel="stylesheet"
     />
     <script>
-      var _hmt = _hmt || [];
-      (function () {
-        var hm = document.createElement("script");
-        hm.src = "https://hm.baidu.com/hm.js?855bc69f15dbbd6c821add525752a9bc";
-        var s = document.getElementsByTagName("script")[0];
-        s.parentNode.insertBefore(hm, s);
-      })();
+      function getDomain() {
+        return window.location.hostname;
+      }
+      console.info(getDomain());
+      if (getDomain() === "ant-cave.github.io") {
+        var _hmt = _hmt || [];
+        (function () {
+          var hm = document.createElement("script");
+          hm.src =
+            "https://hm.baidu.com/hm.js?855bc69f15dbbd6c821add525752a9bc";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      } else if (getDomain() === "localhost") {;
+      } else if (getDomain() === "me.011420.xyz") {
+        var _hmt = _hmt || [];
+        (function () {
+          var hm = document.createElement("script");
+          hm.src =
+            "https://hm.baidu.com/hm.js?054980b6dd1aae5b8cc072c87871f245";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      }
     </script>
   </head>
   <body>

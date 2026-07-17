@@ -543,6 +543,15 @@
     color: #007396;
 }
 
+/* 新增技术栈图标颜色 */
+.ri-braces-line {
+    color: #F7DF1E;
+}
+
+.ri-brain-line {
+    color: #8B5CF6;
+}
+
 .tech-card h3 {
     color: var(--dark-text);
     margin: 0 0 0.5rem 0;

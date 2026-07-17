@@ -302,7 +302,7 @@ const getImageUrl = () => {
             <div class="box mainPara">
                 <div class="para">
                     <h2>深圳高中生开发者</h2>
-                    <p>喜欢写实用小工具，正在探索 AI/LLM 生态、Rust 系统和前后端全栈。热衷于开源项目和技术分享。</p>
+                    <p>喜欢写一些实用的小工具，正在学习各种技术。热衷于开源项目和技术分享。</p>
                 </div>
             </div>
 
@@ -312,7 +312,7 @@ const getImageUrl = () => {
             <div class="projects-grid">
                 <!-- blog项目放第一个，硬跳转到博客页面（不是vue路由） -->
                 <div class="project-card">
-                    <h3>📝 个人博客</h3>
+                    <h3>个人博客</h3>
                     <p>基于 Jekyll 构建的静态博客，记录学习笔记和技术分享，支持自动部署。</p>
                     <div class="project-tags">
                         <span class="tag">Jekyll</span>
@@ -320,62 +320,13 @@ const getImageUrl = () => {
                         <span class="tag">GitHub Actions</span>
                     </div>
                     <div class="project-links">
-                        <a href="/blog" class="project-link" target="_self">去看看 →</a>
+                        <a href="/blog" class="project-link" target="_self">查看详情 →</a>
                         <a href="https://github.com/ant-cave/blog/" target="_blank" class="project-link">查看仓库 →</a>
                     </div>
                 </div>
                 <!-- 其他项目卡片，点击直接跳转GitHub -->
-                <a href="https://github.com/ant-cave/llm_format_bridge" target="_blank" class="project-card">
-                    <h3>🔀 LLM Format Bridge</h3>
-                    <p>LLM API 格式中转代理，在 OpenAI Chat Completions / Responses 与 Anthropic 之间自动转换，支持全部 6 种方向。</p>
-                    <div class="project-tags">
-                        <span class="tag">JavaScript</span>
-                        <span class="tag">Express</span>
-                        <span class="tag">SSE</span>
-                    </div>
-                    <span class="project-link">查看详情 →</span>
-                </a>
-                <a href="https://github.com/ant-cave/open-tauri-remote-webview" target="_blank" class="project-card">
-                    <h3>🦀 Open Tauri Remote WebView</h3>
-                    <p>基于 Rust / Tauri 的远程 WebView 控制方案，探索桌面端与 Web 的融合边界。</p>
-                    <div class="project-tags">
-                        <span class="tag">Rust</span>
-                        <span class="tag">Tauri</span>
-                        <span class="tag">WebView</span>
-                    </div>
-                    <span class="project-link">查看详情 →</span>
-                </a>
-                <a href="https://github.com/ant-cave/ai-api-service" target="_blank" class="project-card">
-                    <h3>🤖 AI API Service</h3>
-                    <p>AI API 请求路由与优先级调度服务，聚合多模型为单一 OpenAI 兼容端点，自动负载均衡。</p>
-                    <div class="project-tags">
-                        <span class="tag">Python</span>
-                        <span class="tag">LLM</span>
-                        <span class="tag">OpenAI</span>
-                    </div>
-                    <span class="project-link">查看详情 →</span>
-                </a>
-                <a href="https://github.com/ant-cave/frp-controller" target="_blank" class="project-card">
-                    <h3>🚇 FRP Controller</h3>
-                    <p>FRP 内网穿透隧道管理工具，方便管理多条 frp 隧道，支持多配置切换和状态监控。</p>
-                    <div class="project-tags">
-                        <span class="tag">Python</span>
-                        <span class="tag">FRP</span>
-                        <span class="tag">网络</span>
-                    </div>
-                    <span class="project-link">查看详情 →</span>
-                </a>
-                <a href="https://github.com/ant-cave/time-lens" target="_blank" class="project-card">
-                    <h3>⏱️ Time Lens</h3>
-                    <p>时间可视化工具，用更直观的方式查看和管理时间数据。</p>
-                    <div class="project-tags">
-                        <span class="tag">Vue</span>
-                        <span class="tag">可视化</span>
-                    </div>
-                    <span class="project-link">查看详情 →</span>
-                </a>
                 <a href="https://github.com/ant-cave/tencentComicDownloadTool" target="_blank" class="project-card">
-                    <h3>📚 腾讯漫画下载工具</h3>
+                    <h3>腾讯漫画下载工具</h3>
                     <p>Python 开发的腾讯动漫下载器，支持批量下载、多线程加速和自动重试。</p>
                     <div class="project-tags">
                         <span class="tag">Python</span>
@@ -385,7 +336,7 @@ const getImageUrl = () => {
                     <span class="project-link">查看详情 →</span>
                 </a>
                 <a href="https://github.com/ant-cave/py-totp-new" target="_blank" class="project-card">
-                    <h3>🔐 TOTP 密码管理器</h3>
+                    <h3>TOTP 密码管理器</h3>
                     <p>本地化的双因素验证码管理工具，AES 加密存储，支持自动刷新和主题切换。</p>
                     <div class="project-tags">
                         <span class="tag">Python</span>
@@ -394,13 +345,23 @@ const getImageUrl = () => {
                     </div>
                     <span class="project-link">查看详情 →</span>
                 </a>
-                <a href="https://github.com/ant-cave/ehdownloader-next" target="_blank" class="project-card">
-                    <h3>⬇️ E-Hentai Downloader Next</h3>
-                    <p>E 站下载器重写版，全新的架构和更稳定的下载体验。</p>
+                <a href="https://github.com/ant-cave/eco_wake_sleep_sub" target="_blank" class="project-card">
+                    <h3>Minecraft 服务器唤醒插件</h3>
+                    <p>Minecraft 服务器状态监控与自动唤醒插件，支持 Wake-on-LAN 和自动传送。</p>
                     <div class="project-tags">
-                        <span class="tag">Python</span>
-                        <span class="tag">异步</span>
-                        <span class="tag">下载器</span>
+                        <span class="tag">Java</span>
+                        <span class="tag">Spigot</span>
+                        <span class="tag">BungeeCord</span>
+                    </div>
+                    <span class="project-link">查看详情 →</span>
+                </a>
+                <a href="https://github.com/CloudAIMultiFunctionClicker/CAMFC-client" target="_blank" class="project-card">
+                    <h3>蓝牙设备客户端</h3>
+                    <p>与团队合作开发的蓝牙 Cpen 设备桌面客户端，用于获取 TOTP 和设备 ID。</p>
+                    <div class="project-tags">
+                        <span class="tag">Tauri</span>
+                        <span class="tag">Vue 3</span>
+                        <span class="tag">Rust</span>
                     </div>
                     <span class="project-link">查看详情 →</span>
                 </a>
@@ -425,32 +386,22 @@ const getImageUrl = () => {
                     <!-- Python图标单独放文件里，方便维护 -->
                     <img src="@/assets/icons/python.svg" class="tech-icon" alt="Python">
                     <h3>Python</h3>
-                    <p>主力语言，工具开发 / AI 服务 / 自动化脚本</p>
+                    <p>主要开发语言，用于工具和桌面应用开发</p>
                 </div>
                 <div class="tech-card">
                     <i class="tech-icon ri-code-line"></i>
                     <h3>前端</h3>
-                    <p>Vue 3 / TypeScript / Vite</p>
-                </div>
-                <div class="tech-card">
-                    <i class="tech-icon ri-braces-line"></i>
-                    <h3>JavaScript</h3>
-                    <p>Node.js / Express API 开发</p>
+                    <p>Vue 3 / TypeScript</p>
                 </div>
                 <div class="tech-card">
                     <i class="tech-icon ri-terminal-box-line"></i>
                     <h3>Rust</h3>
-                    <p>Tauri 桌面应用 / 系统工具</p>
+                    <p>Tauri 桌面应用开发</p>
                 </div>
                 <div class="tech-card">
                     <i class="tech-icon ri-robot-line"></i>
                     <h3>Java</h3>
                     <p>Minecraft 插件开发</p>
-                </div>
-                <div class="tech-card">
-                    <i class="tech-icon ri-brain-line"></i>
-                    <h3>AI / LLM</h3>
-                    <p>API 格式桥接 / 模型调度 / Agent</p>
                 </div>
             </div>
         </div>
@@ -473,21 +424,21 @@ const getImageUrl = () => {
                     <div class="timeline-dot"></div>
                     <div class="timeline-content">
                         <h3>未来</h3>
-                        <p>继续探索 AI 与 Rust，做出更多好用的开源工具</p>
+                        <p>继续探索，持续学习新技术</p>
                     </div>
                 </div>
                 <div class="timeline-item">
                     <div class="timeline-dot"></div>
                     <div class="timeline-content">
                         <h3>2026 - 至今</h3>
-                        <p>构建 LLM API 生态工具（Format Bridge / AI Service），深入 Rust 与 Tauri 开发</p>
+                        <p>参与 CloudAI 团队项目，学习 Rust 和 Tauri 开发</p>
                     </div>
                 </div>
                 <div class="timeline-item">
                     <div class="timeline-dot"></div>
                     <div class="timeline-content">
                         <h3>2025</h3>
-                        <p>开发 TOTP 密码管理器、FRP 内网穿透工具，开始接触开源</p>
+                        <p>开发 TOTP 密码管理器，开始接触开源</p>
                     </div>
                 </div>
                 <div class="timeline-item">
@@ -558,6 +509,7 @@ const getImageUrl = () => {
             <h1 class="footer-title">Ant Cave</h1>
             <p class="footer-text">© 2025 Ant Cave. 使用 AGPL-3.0 许可证开源。</p>
             <p class="footer-text">探索未知 创造可能</p>
+            <p class="footer-text" style="font-size: 0.75rem; opacity: 0.6;">Auto-deployed via GitHub Actions</p>
         </div>
 
         <!-- 第6页翻页按钮 - 暗色主题 -->

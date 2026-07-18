@@ -29,11 +29,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build Vite
         run: npm run build
 
       - name: Prepare SPA fallback
         run: cp dist/index.html dist/404.html
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Build Jekyll blog
+        run: |
+          cd blog
+          gem install jekyll bundler minima
+          jekyll build --baseurl /blog --destination ../dist/blog
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

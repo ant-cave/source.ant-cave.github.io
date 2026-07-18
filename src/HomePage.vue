@@ -22,20 +22,15 @@ import PageNavButtons from "@/components/PageNavButtons.vue";
 import axios from "axios";
 import { onMounted, ref, onUnmounted } from "vue";
 
-// 当前页面索引
 const currentPage = ref(0);
-// 是否正在滚动（防止重复触发）
 const isScrolling = ref(false);
-// 总页面数
 const totalPages = 6;
 
-// 存储背景图片信息的响应式变量
 const bgInfo = ref({
     copyright: "",
     copyright_link: "",
 });
 
-// 触摸相关
 let touchStartY = 0;
 
 onMounted(() => {
@@ -47,13 +42,9 @@ onUnmounted(() => {
     removeScrollListeners();
 });
 
-// 初始化滚动吸附
 const initScrollSnap = () => {
-    // 监听滚轮事件
     window.addEventListener('wheel', handleWheel, { passive: false });
-    // 监听键盘事件
     window.addEventListener('keydown', handleKeydown);
-    // 监听触摸事件
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
 };
@@ -65,20 +56,18 @@ const removeScrollListeners = () => {
     window.removeEventListener('touchend', handleTouchEnd);
 };
 
-// 滚轮事件处理 —— 加个累积值防止轻微滚动就翻页
 let wheelAccumulate = 0;
-const WHEEL_THRESHOLD = 120; // 阈值调大一点，更稳
+const WHEEL_THRESHOLD = 120;
 
 const handleWheel = (e) => {
     e.preventDefault();
     if (isScrolling.value) {
-        wheelAccumulate = 0; // 正在滚动时重置
+        wheelAccumulate = 0;
         return;
     }
 
     wheelAccumulate += e.deltaY;
 
-    // 累积超过阈值才翻页
     if (wheelAccumulate > WHEEL_THRESHOLD && currentPage.value < totalPages - 1) {
         wheelAccumulate = 0;
         scrollToPage(currentPage.value + 1);
@@ -87,14 +76,12 @@ const handleWheel = (e) => {
         scrollToPage(currentPage.value - 1);
     }
 
-    // 300ms没新滚轮事件就重置累积值
     clearTimeout(window.wheelTimer);
     window.wheelTimer = setTimeout(() => {
         wheelAccumulate = 0;
     }, 300);
 };
 
-// 键盘事件处理
 const handleKeydown = (e) => {
     if (isScrolling.value) return;
 
@@ -107,12 +94,10 @@ const handleKeydown = (e) => {
     }
 };
 
-// 触摸开始
 const handleTouchStart = (e) => {
     touchStartY = e.touches[0].clientY;
 };
 
-// 触摸结束 —— 阈值调到80，防止轻微滑动就翻页
 const handleTouchEnd = (e) => {
     if (isScrolling.value) return;
 
@@ -127,7 +112,6 @@ const handleTouchEnd = (e) => {
     }
 };
 
-// 滚动到指定页面
 const scrollToPage = (pageIndex) => {
     if (pageIndex < 0 || pageIndex >= totalPages) return;
 
@@ -142,13 +126,11 @@ const scrollToPage = (pageIndex) => {
         });
     }
 
-    // 滚动动画大约800ms，之后解除锁定
     setTimeout(() => {
         isScrolling.value = false;
     }, 800);
 };
 
-// 预加载图片
 const preloadImage = (src) =>
     new Promise((resolve, reject) => {
         const img = new Image();
@@ -157,7 +139,6 @@ const preloadImage = (src) =>
         img.src = src;
     });
 
-// 异步获取背景图
 const getBackgroundImage = async () => {
     const cachedData = localStorage.getItem("bingBackgroundImage");
     const cachedTime = localStorage.getItem("bingBackgroundImageTime");
@@ -230,7 +211,6 @@ const getImageUrl = () => {
 <template>
     <div class="background-image"></div>
     <div class="background-image-front"></div>
-    <!-- 背景遮罩层 —— 根据页面切换不同遮罩效果 -->
     <div
         class="background-overlay"
         :class="{
@@ -240,7 +220,6 @@ const getImageUrl = () => {
         }"
     ></div>
 
-    <!-- 页面指示器 -->
     <div class="page-indicator">
         <div
             v-for="i in totalPages"
@@ -251,7 +230,6 @@ const getImageUrl = () => {
         ></div>
     </div>
 
-    <!-- 第1页：首页 -->
     <div class="hero basic-page" id="page-0">
         <div class="top-right-info">
             <div class="bg-image-info" v-show="bgInfo.copyright">
@@ -264,10 +242,8 @@ const getImageUrl = () => {
             </div>
         </div>
 
-        <!-- 顶部链接区 —— blog放前面，毕竟是自己写的 -->
         <div class="top-links">
             <a href="/blog" class="blog-link" target="_blank" title="我的博客">
-                <!-- 简单的文档/文章图标 -->
                 <svg class="blog-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
@@ -276,7 +252,6 @@ const getImageUrl = () => {
                     <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
             </a>
-            <!-- 我的GitHub主号，ANT-mmmmm和redirect-to都是这号的小号 -->
             <a href="https://github.com/ant-cave" class="github-link" target="_blank" title="GitHub: ant-cave（主号）">
                 <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
@@ -291,11 +266,8 @@ const getImageUrl = () => {
                 <button @click="scrollToPage(1)">▼</button>
             </div>
         </div>
-
-        <!-- 第1页不需要翻页按钮组件 -->
     </div>
 
-    <!-- 第2页：关于 -->
     <div class="basic-page para-page light-page" id="page-1">
         <div class="container">
             <h1 class="page-title">关于我</h1>
@@ -310,7 +282,6 @@ const getImageUrl = () => {
 
             <h1 class="page-title">我的项目</h1>
             <div class="projects-grid">
-                <!-- blog项目放第一个，硬跳转到博客页面（不是vue路由） -->
                 <div class="project-card">
                     <h3>个人博客</h3>
                     <p>基于 Jekyll 构建的静态博客，记录学习笔记和技术分享，支持自动部署。</p>
@@ -324,24 +295,23 @@ const getImageUrl = () => {
                         <a href="https://github.com/ant-cave/blog/" target="_blank" class="project-link">查看仓库 →</a>
                     </div>
                 </div>
-                <!-- 其他项目卡片，点击直接跳转GitHub -->
-                <a href="https://github.com/ant-cave/deep-student-fork" target="_blank" class="project-card">
-                    <h3>Deep Student</h3>
-                    <p>开源、本地优先的 AI 学习工作台，基于 Tauri 构建，支持全平台桌面端与移动端。</p>
-                    <div class="project-tags">
-                        <span class="tag">TypeScript</span>
-                        <span class="tag">Rust</span>
-                        <span class="tag">Tauri</span>
-                    </div>
-                    <span class="project-link">查看详情 →</span>
-                </a>
                 <a href="https://github.com/ant-cave/open-tauri-remote-webview" target="_blank" class="project-card">
                     <h3>Open Tauri Remote WebView</h3>
-                    <p>为 Tauri 应用提供远程 WebView 能力的 Rust 库，支持移动端和桌面端的灵活 Web 页面渲染。</p>
+                    <p>为 Tauri 应用提供远程 WebView 能力的 Rust 库，支持移动端和桌面端灵活渲染。</p>
                     <div class="project-tags">
                         <span class="tag">Rust</span>
                         <span class="tag">Tauri</span>
                         <span class="tag">WebView</span>
+                    </div>
+                    <span class="project-link">查看详情 →</span>
+                </a>
+                <a href="https://github.com/ant-cave/ai-api-service" target="_blank" class="project-card">
+                    <h3>AI API Service</h3>
+                    <p>AI API 请求路由与优先级调度服务，聚合多个模型为单一 OpenAI 兼容端点。</p>
+                    <div class="project-tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">AI</span>
+                        <span class="tag">API 路由</span>
                     </div>
                     <span class="project-link">查看详情 →</span>
                 </a>
@@ -355,9 +325,9 @@ const getImageUrl = () => {
                     </div>
                     <span class="project-link">查看详情 →</span>
                 </a>
-                <a href="https://github.com/ant-cave/ehdownloader-next" target="_blank" class="project-card">
-                    <h3>EH Downloader Next</h3>
-                    <p>E-Hentai 下载工具下一代版本，支持多线程下载、元数据管理和批量导出。</p>
+                <a href="https://github.com/ant-cave/tencentComicDownloadTool" target="_blank" class="project-card">
+                    <h3>腾讯漫画下载工具</h3>
+                    <p>Python 开发的腾讯动漫下载器，支持批量下载、多线程加速和自动重试。</p>
                     <div class="project-tags">
                         <span class="tag">Python</span>
                         <span class="tag">多线程</span>
@@ -375,20 +345,29 @@ const getImageUrl = () => {
                     </div>
                     <span class="project-link">查看详情 →</span>
                 </a>
-                <a href="https://github.com/ant-cave/ai-api-service" target="_blank" class="project-card">
-                    <h3>AI API Service</h3>
-                    <p>AI API 请求路由与优先级调度服务，聚合多个模型为单一 OpenAI 兼容端点。</p>
+                <a href="https://github.com/ant-cave/py-totp-new" target="_blank" class="project-card">
+                    <h3>TOTP 密码管理器</h3>
+                    <p>本地化的双因素验证码管理工具，AES 加密存储，支持自动刷新和主题切换。</p>
                     <div class="project-tags">
                         <span class="tag">Python</span>
-                        <span class="tag">AI</span>
-                        <span class="tag">API 路由</span>
+                        <span class="tag">PySide6</span>
+                        <span class="tag">加密</span>
+                    </div>
+                    <span class="project-link">查看详情 →</span>
+                </a>
+                <a href="https://github.com/ant-cave/time-lens" target="_blank" class="project-card">
+                    <h3>Time Lens</h3>
+                    <p>Vue 3 开发的时间线可视化工具，以时间轴形式展示事件与数据变化。</p>
+                    <div class="project-tags">
+                        <span class="tag">Vue 3</span>
+                        <span class="tag">Vite</span>
+                        <span class="tag">可视化</span>
                     </div>
                     <span class="project-link">查看详情 →</span>
                 </a>
             </div>
         </div>
 
-        <!-- 第2页翻页按钮 - 亮色主题 -->
         <PageNavButtons
             :current-page="1"
             :total-pages="totalPages"
@@ -397,13 +376,11 @@ const getImageUrl = () => {
         />
     </div>
 
-    <!-- 第3页：科技风格开始 - 技能 -->
     <div class="basic-page tech-page" id="page-2">
         <div class="container">
             <h1 class="page-title tech-title">技术栈</h1>
             <div class="tech-grid">
                 <div class="tech-card">
-                    <!-- Python图标单独放文件里，方便维护 -->
                     <img src="@/assets/icons/python.svg" class="tech-icon" alt="Python">
                     <h3>Python</h3>
                     <p>主要开发语言，用于工具和桌面应用开发</p>
@@ -426,7 +403,6 @@ const getImageUrl = () => {
             </div>
         </div>
 
-        <!-- 第3页翻页按钮 - 暗色主题 -->
         <PageNavButtons
             :current-page="2"
             :total-pages="totalPages"
@@ -435,7 +411,6 @@ const getImageUrl = () => {
         />
     </div>
 
-    <!-- 第4页：经历 -->
     <div class="basic-page tech-page" id="page-3">
         <div class="container">
             <h1 class="page-title tech-title">经历</h1>
@@ -485,7 +460,6 @@ const getImageUrl = () => {
             </div>
         </div>
 
-        <!-- 第4页翻页按钮 - 暗色主题 -->
         <PageNavButtons
             :current-page="3"
             :total-pages="totalPages"
@@ -494,7 +468,6 @@ const getImageUrl = () => {
         />
     </div>
 
-    <!-- 第5页：联系 -->
     <div class="basic-page tech-page" id="page-4">
         <div class="container">
             <h1 class="page-title tech-title">联系</h1>
@@ -504,7 +477,6 @@ const getImageUrl = () => {
                     <h3>邮箱</h3>
                     <p>ANTmmmmm@outlook.com</p>
                 </a>
-                <!-- 小号说明：ANT-mmmmm和redirect-to都是这个号的分身 -->
                 <a href="https://github.com/ant-cave" target="_blank" class="contact-card">
                     <i class="contact-icon ri-github-line"></i>
                     <h3>GitHub</h3>
@@ -514,7 +486,6 @@ const getImageUrl = () => {
             </div>
         </div>
 
-        <!-- 第5页翻页按钮 - 暗色主题 -->
         <PageNavButtons
             :current-page="4"
             :total-pages="totalPages"
@@ -523,7 +494,6 @@ const getImageUrl = () => {
         />
     </div>
 
-    <!-- 第6页：页脚 -->
     <div class="basic-page tech-page footer-page" id="page-5">
         <div class="footer-content">
             <h1 class="footer-title">Ant Cave</h1>
@@ -532,7 +502,6 @@ const getImageUrl = () => {
             <p class="footer-text" style="font-size: 0.75rem; opacity: 0.6;">Auto-deployed via GitHub Actions</p>
         </div>
 
-        <!-- 第6页翻页按钮 - 暗色主题 -->
         <PageNavButtons
             :current-page="5"
             :total-pages="totalPages"

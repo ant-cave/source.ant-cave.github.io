@@ -325,43 +325,63 @@ const getImageUrl = () => {
                     </div>
                 </div>
                 <!-- 其他项目卡片，点击直接跳转GitHub -->
-                <a href="https://github.com/ant-cave/tencentComicDownloadTool" target="_blank" class="project-card">
-                    <h3>腾讯漫画下载工具</h3>
-                    <p>Python 开发的腾讯动漫下载器，支持批量下载、多线程加速和自动重试。</p>
+                <a href="https://github.com/ant-cave/deep-student-fork" target="_blank" class="project-card">
+                    <h3>Deep Student</h3>
+                    <p>开源、本地优先的 AI 学习工作台，基于 Tauri 构建，支持全平台桌面端与移动端。</p>
                     <div class="project-tags">
-                        <span class="tag">Python</span>
-                        <span class="tag">requests</span>
-                        <span class="tag">quickjs</span>
-                    </div>
-                    <span class="project-link">查看详情 →</span>
-                </a>
-                <a href="https://github.com/ant-cave/py-totp-new" target="_blank" class="project-card">
-                    <h3>TOTP 密码管理器</h3>
-                    <p>本地化的双因素验证码管理工具，AES 加密存储，支持自动刷新和主题切换。</p>
-                    <div class="project-tags">
-                        <span class="tag">Python</span>
-                        <span class="tag">PySide6</span>
-                        <span class="tag">cryptography</span>
-                    </div>
-                    <span class="project-link">查看详情 →</span>
-                </a>
-                <a href="https://github.com/ant-cave/eco_wake_sleep_sub" target="_blank" class="project-card">
-                    <h3>Minecraft 服务器唤醒插件</h3>
-                    <p>Minecraft 服务器状态监控与自动唤醒插件，支持 Wake-on-LAN 和自动传送。</p>
-                    <div class="project-tags">
-                        <span class="tag">Java</span>
-                        <span class="tag">Spigot</span>
-                        <span class="tag">BungeeCord</span>
-                    </div>
-                    <span class="project-link">查看详情 →</span>
-                </a>
-                <a href="https://github.com/CloudAIMultiFunctionClicker/CAMFC-client" target="_blank" class="project-card">
-                    <h3>蓝牙设备客户端</h3>
-                    <p>与团队合作开发的蓝牙 Cpen 设备桌面客户端，用于获取 TOTP 和设备 ID。</p>
-                    <div class="project-tags">
-                        <span class="tag">Tauri</span>
-                        <span class="tag">Vue 3</span>
+                        <span class="tag">TypeScript</span>
                         <span class="tag">Rust</span>
+                        <span class="tag">Tauri</span>
+                    </div>
+                    <span class="project-link">查看详情 →</span>
+                </a>
+                <a href="https://github.com/ant-cave/open-tauri-remote-webview" target="_blank" class="project-card">
+                    <h3>Open Tauri Remote WebView</h3>
+                    <p>为 Tauri 应用提供远程 WebView 能力的 Rust 库，支持移动端和桌面端的灵活 Web 页面渲染。</p>
+                    <div class="project-tags">
+                        <span class="tag">Rust</span>
+                        <span class="tag">Tauri</span>
+                        <span class="tag">WebView</span>
+                    </div>
+                    <span class="project-link">查看详情 →</span>
+                </a>
+                <a href="https://github.com/ant-cave/llm_format_bridge" target="_blank" class="project-card">
+                    <h3>LLM Format Bridge</h3>
+                    <p>LLM 输出格式转换桥接工具，支持多种 AI 模型输出的格式标准化与互转。</p>
+                    <div class="project-tags">
+                        <span class="tag">JavaScript</span>
+                        <span class="tag">LLM</span>
+                        <span class="tag">API</span>
+                    </div>
+                    <span class="project-link">查看详情 →</span>
+                </a>
+                <a href="https://github.com/ant-cave/ehdownloader-next" target="_blank" class="project-card">
+                    <h3>EH Downloader Next</h3>
+                    <p>E-Hentai 下载工具下一代版本，支持多线程下载、元数据管理和批量导出。</p>
+                    <div class="project-tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">多线程</span>
+                        <span class="tag">下载器</span>
+                    </div>
+                    <span class="project-link">查看详情 →</span>
+                </a>
+                <a href="https://github.com/ant-cave/frp-controller" target="_blank" class="project-card">
+                    <h3>FRP Controller</h3>
+                    <p>FRP 内网穿透隧道管理工具，提供 Web 管理界面，轻松管理多个 frp 隧道配置。</p>
+                    <div class="project-tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">frp</span>
+                        <span class="tag">内网穿透</span>
+                    </div>
+                    <span class="project-link">查看详情 →</span>
+                </a>
+                <a href="https://github.com/ant-cave/ai-api-service" target="_blank" class="project-card">
+                    <h3>AI API Service</h3>
+                    <p>AI API 请求路由与优先级调度服务，聚合多个模型为单一 OpenAI 兼容端点。</p>
+                    <div class="project-tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">AI</span>
+                        <span class="tag">API 路由</span>
                     </div>
                     <span class="project-link">查看详情 →</span>
                 </a>

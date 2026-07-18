@@ -12,4 +12,15 @@ const router = createRouter({
   ]
 })
 
+const originalPush = router.push
+router.push = function push(location) {
+  return originalPush.call(this, location).catch(err => {
+    if (err.type !== 10) throw err
+  })
+}
+
+if (window.location.pathname.startsWith('/blog')) {
+  window.location.reload()
+}
+
 export default router

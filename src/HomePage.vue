@@ -295,6 +295,16 @@ const getImageUrl = () => {
                         <a href="https://github.com/ant-cave/blog/" target="_blank" class="project-link">查看仓库 →</a>
                     </div>
                 </div>
+                <a href="https://github.com/HelixNow/deep-student" target="_blank" class="project-card">
+                    <h3>Deep Student</h3>
+                    <p>开源、本地优先的 AI 学习工作台，基于 Tauri 构建，支持全平台桌面端与移动端。</p>
+                    <div class="project-tags">
+                        <span class="tag">TypeScript</span>
+                        <span class="tag">Rust</span>
+                        <span class="tag">Tauri</span>
+                    </div>
+                    <span class="project-link">查看详情 →</span>
+                </a>
                 <a href="https://github.com/ant-cave/open-tauri-remote-webview" target="_blank" class="project-card">
                     <h3>Open Tauri Remote WebView</h3>
                     <p>为 Tauri 应用提供远程 WebView 能力的 Rust 库，支持移动端和桌面端灵活渲染。</p>
@@ -302,16 +312,6 @@ const getImageUrl = () => {
                         <span class="tag">Rust</span>
                         <span class="tag">Tauri</span>
                         <span class="tag">WebView</span>
-                    </div>
-                    <span class="project-link">查看详情 →</span>
-                </a>
-                <a href="https://github.com/ant-cave/ai-api-service" target="_blank" class="project-card">
-                    <h3>AI API Service</h3>
-                    <p>AI API 请求路由与优先级调度服务，聚合多个模型为单一 OpenAI 兼容端点。</p>
-                    <div class="project-tags">
-                        <span class="tag">Python</span>
-                        <span class="tag">AI</span>
-                        <span class="tag">API 路由</span>
                     </div>
                     <span class="project-link">查看详情 →</span>
                 </a>
@@ -352,16 +352,6 @@ const getImageUrl = () => {
                         <span class="tag">Python</span>
                         <span class="tag">PySide6</span>
                         <span class="tag">加密</span>
-                    </div>
-                    <span class="project-link">查看详情 →</span>
-                </a>
-                <a href="https://github.com/ant-cave/time-lens" target="_blank" class="project-card">
-                    <h3>Time Lens</h3>
-                    <p>Vue 3 开发的时间线可视化工具，以时间轴形式展示事件与数据变化。</p>
-                    <div class="project-tags">
-                        <span class="tag">Vue 3</span>
-                        <span class="tag">Vite</span>
-                        <span class="tag">可视化</span>
                     </div>
                     <span class="project-link">查看详情 →</span>
                 </a>

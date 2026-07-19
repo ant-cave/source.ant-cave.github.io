@@ -33,6 +33,13 @@
           var s = document.getElementsByTagName("script")[0];
           s.parentNode.insertBefore(hm, s);
         })();
+        (function () {
+          window._antTrackEndpoint = "https://backend.api.011420.xyz/api/track";
+          var s = document.createElement("script");
+          s.src = "https://backend.api.011420.xyz/tracker.js";
+          s.async = true;
+          document.head.appendChild(s);
+        })();
       }
     </script>
   </head>

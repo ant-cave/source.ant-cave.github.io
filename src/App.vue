@@ -16,31 +16,6 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
-<script setup>
-  import "@/assets/colors.css"
-  import "@/assets/privateColors.css"
-</script>
-
 <template>
-  <!-- 路由视图容器 -->
-  <router-view id="full"></router-view>
-  <span id="end">
-    router-view end
-  </span>
+  <router-view />
 </template>
-
-<style scoped>
-  :global(body),
-  :global(html) {
-      margin: 0;
-      padding: 0;
-      /* 移除overflow: hidden，允许滚动查看hello文本 */
-  }
-  .full{
-    height: 100px;
-    width: 100px;
-  }
-  #end{
-    background-color: white;
-  }
-</style>

@@ -1,4 +1,5 @@
 <script setup>
+import { useRouter } from "vue-router";
 import PageNavButtons from "@/components/PageNavButtons.vue";
 
 defineProps({
@@ -7,6 +8,75 @@ defineProps({
 });
 
 const emit = defineEmits(["navigate"]);
+const router = useRouter();
+
+const projects = [
+  {
+    id: "blog",
+    title: "个人博客",
+    tags: ["Jekyll", "Ruby"],
+    links: [
+      { label: "查看详情", url: "/blog" },
+      { label: "查看仓库", url: "https://github.com/ant-cave/blog/" },
+    ],
+  },
+  {
+    id: "deep-student",
+    title: "Deep Student",
+    tags: ["TypeScript", "Rust", "Tauri"],
+    links: [
+      { label: "查看仓库", url: "https://github.com/HelixNow/deep-student" },
+    ],
+  },
+  {
+    id: "open-tauri-remote-webview",
+    title: "Open Tauri Remote WebView",
+    tags: ["Rust", "Tauri", "WebView"],
+    links: [
+      { label: "查看仓库", url: "https://github.com/ant-cave/open-tauri-remote-webview" },
+    ],
+  },
+  {
+    id: "llm-format-bridge",
+    title: "LLM Format Bridge",
+    tags: ["JavaScript", "LLM"],
+    links: [
+      { label: "查看仓库", url: "https://github.com/ant-cave/llm_format_bridge" },
+    ],
+  },
+  {
+    id: "tencent-comic-downloader",
+    title: "腾讯漫画下载工具",
+    tags: ["Python", "多线程"],
+    links: [
+      { label: "查看仓库", url: "https://github.com/ant-cave/tencentComicDownloadTool" },
+    ],
+  },
+  {
+    id: "frp-controller",
+    title: "FRP Controller",
+    tags: ["Python", "frp", "内网穿透"],
+    links: [
+      { label: "查看仓库", url: "https://github.com/ant-cave/frp-controller" },
+    ],
+  },
+  {
+    id: "totp-manager",
+    title: "TOTP 密码管理器",
+    tags: ["Python", "PySide6", "加密"],
+    links: [
+      { label: "查看仓库", url: "https://github.com/ant-cave/py-totp-new" },
+    ],
+  },
+];
+
+function goToProject(project) {
+  router.push({ name: "Project", params: { id: project.id } });
+}
+
+function goToProjects() {
+  router.push({ name: "Projects" });
+}
 </script>
 
 <template>
@@ -23,81 +93,20 @@ const emit = defineEmits(["navigate"]);
       <div class="hr"></div>
 
       <h1 class="page-title">我的项目</h1>
-      <div class="projects-grid">
-        <div class="project-card">
-          <h3>个人博客</h3>
-          <p>基于 Jekyll 构建的静态博客，记录学习笔记和技术分享，支持自动部署。</p>
-          <div class="project-tags">
-            <span class="tag">Jekyll</span>
-            <span class="tag">Ruby</span>
-            <span class="tag">GitHub Actions</span>
-          </div>
-          <div class="project-links">
-            <a href="/blog" class="project-link" target="_self">查看详情 →</a>
-            <a href="https://github.com/ant-cave/blog/" target="_blank" class="project-link">查看仓库 →</a>
+      <div class="compact-grid">
+        <div
+          v-for="project in projects"
+          :key="project.id"
+          class="compact-card"
+          @click="goToProject(project)"
+        >
+          <h3 class="compact-card-title">{{ project.title }}</h3>
+          <div class="compact-card-tags">
+            <span v-for="tag in project.tags" :key="tag" class="compact-tag">{{ tag }}</span>
           </div>
         </div>
-        <a href="https://github.com/HelixNow/deep-student" target="_blank" class="project-card">
-          <h3>Deep Student</h3>
-          <p>开源、本地优先的 AI 学习工作台，基于 Tauri 构建，支持全平台桌面端与移动端。</p>
-          <div class="project-tags">
-            <span class="tag">TypeScript</span>
-            <span class="tag">Rust</span>
-            <span class="tag">Tauri</span>
-          </div>
-          <span class="project-link">查看详情 →</span>
-        </a>
-        <a href="https://github.com/ant-cave/open-tauri-remote-webview" target="_blank" class="project-card">
-          <h3>Open Tauri Remote WebView</h3>
-          <p>为 Tauri 应用提供远程 WebView 能力的 Rust 库，支持移动端和桌面端灵活渲染。</p>
-          <div class="project-tags">
-            <span class="tag">Rust</span>
-            <span class="tag">Tauri</span>
-            <span class="tag">WebView</span>
-          </div>
-          <span class="project-link">查看详情 →</span>
-        </a>
-        <a href="https://github.com/ant-cave/llm_format_bridge" target="_blank" class="project-card">
-          <h3>LLM Format Bridge</h3>
-          <p>LLM 输出格式转换桥接工具，支持多种 AI 模型输出的格式标准化与互转。</p>
-          <div class="project-tags">
-            <span class="tag">JavaScript</span>
-            <span class="tag">LLM</span>
-            <span class="tag">API</span>
-          </div>
-          <span class="project-link">查看详情 →</span>
-        </a>
-        <a href="https://github.com/ant-cave/tencentComicDownloadTool" target="_blank" class="project-card">
-          <h3>腾讯漫画下载工具</h3>
-          <p>Python 开发的腾讯动漫下载器，支持批量下载、多线程加速和自动重试。</p>
-          <div class="project-tags">
-            <span class="tag">Python</span>
-            <span class="tag">多线程</span>
-            <span class="tag">下载器</span>
-          </div>
-          <span class="project-link">查看详情 →</span>
-        </a>
-        <a href="https://github.com/ant-cave/frp-controller" target="_blank" class="project-card">
-          <h3>FRP Controller</h3>
-          <p>FRP 内网穿透隧道管理工具，提供 Web 管理界面，轻松管理多个 frp 隧道配置。</p>
-          <div class="project-tags">
-            <span class="tag">Python</span>
-            <span class="tag">frp</span>
-            <span class="tag">内网穿透</span>
-          </div>
-          <span class="project-link">查看详情 →</span>
-        </a>
-        <a href="https://github.com/ant-cave/py-totp-new" target="_blank" class="project-card">
-          <h3>TOTP 密码管理器</h3>
-          <p>本地化的双因素验证码管理工具，AES 加密存储，支持自动刷新和主题切换。</p>
-          <div class="project-tags">
-            <span class="tag">Python</span>
-            <span class="tag">PySide6</span>
-            <span class="tag">加密</span>
-          </div>
-          <span class="project-link">查看详情 →</span>
-        </a>
       </div>
+      <button class="more-btn" @click="goToProjects">更多项目 →</button>
     </div>
 
     <PageNavButtons
@@ -108,3 +117,125 @@ const emit = defineEmits(["navigate"]);
     />
   </div>
 </template>
+
+<style scoped>
+.compact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.compact-card {
+  background: var(--light-card);
+  border: 1px solid var(--light-border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-align: left;
+}
+
+.compact-card:hover {
+  border-color: var(--accent-green);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-1px);
+}
+
+.compact-card-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+  color: var(--light-text);
+  font-weight: 600;
+}
+
+.compact-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.compact-tag {
+  background: #f0f4f8;
+  color: var(--primary-gray);
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  border: 1px solid var(--light-border);
+}
+
+.more-btn {
+  margin-top: 1.2rem;
+  background: transparent;
+  border: 2px solid var(--accent-green);
+  color: var(--accent-green);
+  padding: 0.5rem 1.5rem;
+  font-size: 0.9rem;
+  border-radius: 24px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all var(--transition-normal);
+}
+
+.more-btn:hover {
+  background: var(--accent-green);
+  color: white;
+}
+
+@media (max-width: 820px) {
+  .compact-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .compact-card {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .compact-card-title {
+    font-size: 0.85rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .compact-tag {
+    font-size: 0.6rem;
+    padding: 0.1rem 0.4rem;
+  }
+
+  .more-btn {
+    margin-top: 0.8rem;
+    padding: 0.4rem 1.2rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 430px) {
+  .compact-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+  }
+
+  .compact-card {
+    padding: 0.45rem 0.55rem;
+    border-radius: 8px;
+  }
+
+  .compact-card-title {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .compact-tag {
+    font-size: 0.55rem;
+    padding: 0.05rem 0.35rem;
+  }
+
+  .more-btn {
+    margin-top: 0.5rem;
+    padding: 0.3rem 1rem;
+    font-size: 0.75rem;
+  }
+}
+</style>

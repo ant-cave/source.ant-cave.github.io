@@ -26,8 +26,7 @@ onMounted(() => {
     class="background-overlay"
     :class="{
       'overlay-transparent': currentPage === 0,
-      'overlay-light': currentPage === 1,
-      'overlay-dark': currentPage >= 2
+      'overlay-dark': currentPage >= 1
     }"
   ></div>
 

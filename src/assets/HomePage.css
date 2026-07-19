@@ -814,6 +814,12 @@
         margin-bottom: 1rem;
     }
 
+    .timeline-dot {
+        left: -1.25rem;
+        width: 10px;
+        height: 10px;
+    }
+
     .timeline-content h3 {
         font-size: 0.95rem;
     }

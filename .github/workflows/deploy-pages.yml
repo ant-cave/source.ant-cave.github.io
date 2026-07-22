@@ -33,7 +33,12 @@ jobs:
         run: npm run build
 
       - name: Prepare SPA fallback
-        run: cp dist/index.html dist/404.html
+        run: |
+          cp dist/index.html dist/404.html
+          mkdir -p dist/projects dist/fursee dist/project/blog dist/project/deep-student dist/project/open-tauri-remote-webview dist/project/llm-format-bridge dist/project/tencent-comic-downloader dist/project/frp-controller dist/project/totp-manager
+          for d in dist/projects dist/fursee dist/project/blog dist/project/deep-student dist/project/open-tauri-remote-webview dist/project/llm-format-bridge dist/project/tencent-comic-downloader dist/project/frp-controller dist/project/totp-manager; do
+            cp dist/index.html "$d/index.html"
+          done
 
       - uses: ruby/setup-ruby@v1
         with:

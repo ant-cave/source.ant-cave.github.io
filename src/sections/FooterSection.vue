@@ -10,7 +10,7 @@ const emit = defineEmits(["navigate"]);
 </script>
 
 <template>
-  <div class="basic-page tech-page footer-page" id="page-5">
+  <div class="basic-page tech-page footer-page" id="page-6">
     <div class="footer-content">
       <h1 class="footer-title">Ant Cave</h1>
       <p class="footer-text">© 2025 Ant Cave. 使用 AGPL-3.0 许可证开源。</p>
@@ -19,7 +19,7 @@ const emit = defineEmits(["navigate"]);
     </div>
 
     <PageNavButtons
-      :current-page="5"
+      :current-page="6"
       :total-pages="totalPages"
       theme="dark"
       @navigate="emit('navigate', $event)"

@@ -5,12 +5,13 @@ import { useScrollNavigation } from "@/composables/useScrollNavigation";
 import { useBingBackground } from "@/composables/useBingBackground";
 import HeroSection from "@/sections/HeroSection.vue";
 import AboutSection from "@/sections/AboutSection.vue";
+import ToolsSection from "@/sections/ToolsSection.vue";
 import TechStackSection from "@/sections/TechStackSection.vue";
 import TimelineSection from "@/sections/TimelineSection.vue";
 import ContactSection from "@/sections/ContactSection.vue";
 import FooterSection from "@/sections/FooterSection.vue";
 
-const totalPages = 6;
+const totalPages = 7;
 const { currentPage, scrollToPage } = useScrollNavigation(totalPages);
 const { bgInfo, getBackgroundImage, getImageUrl } = useBingBackground();
 
@@ -42,8 +43,9 @@ onMounted(() => {
 
   <HeroSection :bg-info="bgInfo" :get-image-url="getImageUrl" @navigate="scrollToPage" />
   <AboutSection :current-page="1" :total-pages="totalPages" @navigate="scrollToPage" />
-  <TechStackSection :current-page="2" :total-pages="totalPages" @navigate="scrollToPage" />
-  <TimelineSection :current-page="3" :total-pages="totalPages" @navigate="scrollToPage" />
-  <ContactSection :current-page="4" :total-pages="totalPages" @navigate="scrollToPage" />
-  <FooterSection :current-page="5" :total-pages="totalPages" @navigate="scrollToPage" />
+  <ToolsSection :current-page="2" :total-pages="totalPages" @navigate="scrollToPage" />
+  <TechStackSection :current-page="3" :total-pages="totalPages" @navigate="scrollToPage" />
+  <TimelineSection :current-page="4" :total-pages="totalPages" @navigate="scrollToPage" />
+  <ContactSection :current-page="5" :total-pages="totalPages" @navigate="scrollToPage" />
+  <FooterSection :current-page="6" :total-pages="totalPages" @navigate="scrollToPage" />
 </template>

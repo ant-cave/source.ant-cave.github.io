@@ -102,26 +102,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useMessage, useDialog } from 'naive-ui'
+import { ref, computed } from 'vue'
+import { useMessage } from 'naive-ui'
 
 const BASE = 'https://fursee.api.011420.xyz'
 const msg = useMessage()
-const dialog = useDialog()
-
-onMounted(async () => {
-  try {
-    const res = await fetch(`${BASE}/api/stats`, { method: 'HEAD' })
-    if (!res.ok) throw new Error('not ok')
-  } catch {
-    dialog.warning({
-      title: '无法连接到后端',
-      content: 'Fursee 后端服务当前不可用，请稍后再试。',
-      positiveText: '知道了',
-      maskClosable: true,
-    })
-  }
-})
 
 const fileInput = ref(null)
 const dragOver = ref(false)

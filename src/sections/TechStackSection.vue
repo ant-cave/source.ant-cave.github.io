@@ -10,7 +10,7 @@ const emit = defineEmits(["navigate"]);
 </script>
 
 <template>
-  <div class="basic-page tech-page" id="page-2">
+  <div class="basic-page tech-page" id="page-3">
     <div class="container">
       <h1 class="page-title tech-title">技术栈</h1>
       <div class="tech-grid">
@@ -38,7 +38,7 @@ const emit = defineEmits(["navigate"]);
     </div>
 
     <PageNavButtons
-      :current-page="2"
+      :current-page="3"
       :total-pages="totalPages"
       theme="dark"
       @navigate="emit('navigate', $event)"

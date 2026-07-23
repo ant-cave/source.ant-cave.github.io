@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../HomePage.vue'
 import ProjectsPage from '../views/ProjectsPage.vue'
-import FurseePage from '../views/FurseePage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,29 +8,33 @@ const router = createRouter({
     {
       path: '/',
       name: 'Home',
-      component: HomePage
+      component: HomePage,
     },
     {
       path: '/projects',
       name: 'Projects',
-      component: ProjectsPage
+      component: ProjectsPage,
     },
     {
       path: '/project/:id',
       name: 'Project',
-      component: ProjectsPage
+      component: ProjectsPage,
     },
     {
       path: '/fursee',
-      name: 'Fursee',
-      component: FurseePage
-    }
-  ]
+      redirect: '/fursee/auto',
+    },
+    {
+      path: '/fursee/auto',
+      name: 'FurseeAuto',
+      component: () => import('../views/fursee/Auto.vue'),
+    },
+  ],
 })
 
 const originalPush = router.push
 router.push = function push(location) {
-  return originalPush.call(this, location).catch(err => {
+  return originalPush.call(this, location).catch((err) => {
     if (err.type !== 10) throw err
   })
 }

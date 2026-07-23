@@ -12,4 +12,13 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    proxy: {
+      '/fursee': {
+        target: 'http://localhost:15898',
+        changeOrigin: true,
+        ws: true,
+      },
+    },
+  },
 })

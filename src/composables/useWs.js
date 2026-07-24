@@ -1,5 +1,8 @@
 import { ref, onUnmounted } from 'vue'
 
+const DEV = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+const WS_HOST = DEV ? location.host : 'backend.api.011420.xyz'
+
 export function useWs() {
   const connected = ref(false)
   let ws = null
@@ -18,7 +21,7 @@ export function useWs() {
   function _connect() {
     if (!taskId) return
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const url = `${proto}//${location.host}/fursee/api/ws/${taskId}`
+    const url = `${proto}//${WS_HOST}/fursee/api/ws/${taskId}`
     console.log(`[WebSocket] 正在连接 ${url}`)
 
     ws = new WebSocket(url)

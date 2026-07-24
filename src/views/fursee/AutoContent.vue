@@ -2,9 +2,15 @@
   <div class="auto-page">
     <n-card :title="appendMode ? '追加模式' : '傻瓜模式 — 一键分类'" class="mb-12" v-if="!running && !currentRunId">
       <div class="quota-bar">
-        <span>📤 上传 {{ quota.upload_used_mb }}/{{ quota.upload_limit_mb }}MB</span>
-        <span>⚙️ 流水线 {{ quota.pipeline_runs }}/{{ quota.pipeline_limit }}次</span>
-        <span class="quota-refresh">{{ quotaRefreshIn }}</span>
+        <span><i class="ri-upload-cloud-line"></i> 剩余 {{ (quota.upload_limit_mb - quota.upload_used_mb).toFixed(0) }}MB / {{ quota.upload_limit_mb }}MB</span>
+        <span><i class="ri-play-circle-line"></i> 剩余 {{ quota.pipeline_limit - quota.pipeline_runs }}/{{ quota.pipeline_limit }}次</span>
+        <span class="quota-refresh"><i class="ri-time-line"></i> {{ quotaRefreshIn }}</span>
+        <n-tooltip trigger="hover" placement="bottom">
+          <template #trigger>
+            <i class="ri-information-line quota-info"></i>
+          </template>
+          本服务为自搭服务器，算力有限，设置每日配额以保证所有用户都能正常使用。<br>配额每日 0:00 自动重置。
+        </n-tooltip>
       </div>
       <div class="step-desc" v-if="!appendMode">上传你的毛装角色照片，系统会自动检测、提取特征、聚类分组。完成后可直接下载分类好的 ZIP 压缩包。</div>
       <div class="step-desc" v-else>将新图片追加至已有运行，系统会合并检测并重新聚类。</div>
@@ -115,7 +121,7 @@
 import { ref, computed, onMounted } from 'vue'
 import {
   NCard, NButton, NProgress, NCollapse, NCollapseItem, NEmpty,
-  NSlider, NInputNumber, NSelect, useMessage, useDialog,
+  NSlider, NInputNumber, NSelect, NTooltip, useMessage, useDialog,
 } from 'naive-ui'
 import { useApi } from '@/composables/useApi'
 import { useWs } from '@/composables/useWs'
@@ -353,8 +359,10 @@ onMounted(() => {
 .upload-area { padding:32px; text-align:center; }
 .upload-title { margin:4px 0; font-size:15px; color:#333; font-weight:500; }
 .upload-hint { margin:4px 0; font-size:12px; color:#999; }
-.quota-bar { display:flex; gap:16px; font-size:12px; color:#666; margin-bottom:12px; padding:8px 12px; background:#f7f8fa; border-radius:6px; flex-wrap:wrap; }
+.quota-bar { display:flex; gap:16px; font-size:12px; color:#666; margin-bottom:12px; padding:8px 12px; background:#f7f8fa; border-radius:6px; flex-wrap:wrap; align-items:center; }
+.quota-bar i { font-size:14px; vertical-align:-1px; }
 .quota-refresh { color:#999; margin-left:auto; }
+.quota-info { cursor:pointer; color:#999; margin-left:4px; font-size:13px; }
 .upload-summary { margin:12px 0; font-size:13px; color:#666; }
 .action-bar { margin-top:16px; }
 .param-row { display:flex; gap:12px; margin-bottom:8px; }

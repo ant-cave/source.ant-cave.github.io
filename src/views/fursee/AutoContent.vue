@@ -19,7 +19,7 @@
         </div>
         <div class="upload-area" v-else>
           <n-progress type="line" :percentage="uploadPct" indicator-placement="inside" style="max-width:300px;margin:0 auto" />
-          <p class="upload-hint" style="margin-top:4px">{{ uploadPct }}%</p>
+          <p class="upload-hint" style="margin-top:4px">{{ uploadPct >= 100 ? '服务端处理中…' : uploadPct + '%' }}</p>
         </div>
       </div>
 

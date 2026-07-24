@@ -42,15 +42,33 @@ export function useApi() {
   }
 
   async function uploadImages(category, files, onProgress) {
+    const totalSize = files.reduce((s, f) => s + f.size, 0)
+    const fileNames = files.map(f => f.name).join(', ')
+    console.log(`[上传] 开始上传 ${files.length} 张图片，分类=${category}，总大小=${(totalSize / 1024 / 1024).toFixed(2)}MB，文件=[${fileNames}]`)
     const form = new FormData()
     files.forEach((f) => form.append('files', f))
-    const { data } = await api.post(`/images/${category}/upload`, form, {
-      onUploadProgress: (e) => {
-        if (onProgress && e.total) onProgress(Math.round((e.loaded / e.total) * 100))
-      },
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-    return data
+    const startTime = Date.now()
+    try {
+      const { data } = await api.post(`/images/${category}/upload`, form, {
+        onUploadProgress: (e) => {
+          if (e.total) {
+            const pct = Math.round((e.loaded / e.total) * 100)
+            const speed = e.total > 0 ? ((e.loaded / 1024 / 1024) / ((Date.now() - startTime) / 1000)).toFixed(1) : '?'
+            if (pct % 10 === 0 || pct >= 100) {
+              console.log(`[上传] 进度 ${pct}% — 已上传 ${(e.loaded / 1024 / 1024).toFixed(2)}/${(e.total / 1024 / 1024).toFixed(2)}MB，速度 ${speed}MB/s`)
+            }
+            if (onProgress) onProgress(pct)
+          }
+        },
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
+      console.log(`[上传] HTTP上传完成，耗时 ${elapsed}s，响应状态=${data?.status || 'ok'}`)
+      return data
+    } catch (e) {
+      console.error(`[上传] 上传失败: ${e.message}`)
+      throw e
+    }
   }
 
   async function deleteImage(category, filename) {

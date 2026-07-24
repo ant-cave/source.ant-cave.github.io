@@ -155,46 +155,72 @@ const appendOptions = computed(() =>
 
 async function doUpload(files) {
   const arr = Array.from(files).filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f.name))
+  const rejected = Array.from(files).filter(f => !/\.(jpg|jpeg|png|webp)$/i.test(f.name))
+  if (rejected.length) console.warn(`[上传] 跳过 ${rejected.length} 个不支持的文件: ${rejected.map(f => f.name).join(', ')}`)
   if (!arr.length) return
+  console.log(`[上传] 开始上传流程，有效文件 ${arr.length} 张`)
   uploading.value = true; uploadPct.value = 0
+  const startTime = Date.now()
   try {
-    await api.uploadImages('auto_uploads', arr, (p) => { uploadPct.value = p })
+    await api.uploadImages('auto_uploads', arr, (p) => {
+      uploadPct.value = p
+      if (p >= 100) console.log(`[上传] HTTP字节已全部发送，等待服务端响应…`)
+    })
     uploadCount.value += arr.length
-  } catch (e) { msg.error(e.message) }
-  finally { uploading.value = false; uploadPct.value = 0 }
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
+    console.log(`[上传] 上传流程完成，累计 ${uploadCount.value} 张，总耗时 ${elapsed}s`)
+  } catch (e) {
+    console.error(`[上传] 上传流程失败: ${e.message}`)
+    msg.error(e.message)
+  }
+  finally {
+    uploading.value = false; uploadPct.value = 0
+    console.log(`[上传] 上传状态已重置`)
+  }
 }
 function onDrop(e) { dragOver.value = false; if (e.dataTransfer?.files) doUpload(e.dataTransfer.files) }
 function onFileChange(e) { const t = e.target; if (t.files) doUpload(t.files); t.value = '' }
 
 async function startAuto() {
   if (!uploadCount.value) return
+  console.log(`[流水线] 启动一键分类，图片数=${uploadCount.value}，追加模式=${appendMode.value}`)
   running.value = true; logs.value = []; progress.value = { current: 0, total: 0 }
   currentRunId.value = ''; currentRun.value = null
   currentStage.value = '📷 检测中'
   try {
     const existingId = appendMode.value ? appendTargetId.value : ''
-    const res = await api.startPipeline('auto', {
+    const params = {
       conf: conf.value, iou: iou.value,
       eps_start: epsStart.value, eps_stop: epsStop.value, eps_step: epsStep.value,
       use_augmentation: true, augmentation_count: 4,
       existing_run_id: existingId,
-    })
+    }
+    console.log(`[流水线] 参数: 置信度=${params.conf}，IoU=${params.iou}，EPS=${params.eps_start}/${params.eps_stop}/${params.eps_step}，增强=${params.augmentation_count}次`)
+    const res = await api.startPipeline('auto', params)
+    console.log(`[流水线] 服务端返回 task_id=${res.task_id}`)
     appendMode.value = false
     appendTargetId.value = ''
     connect(res.task_id, handleProgress)
-  } catch (e) { msg.error(e.message); running.value = false }
+  } catch (e) {
+    console.error(`[流水线] 启动失败: ${e.message}`)
+    msg.error(e.message); running.value = false
+  }
 }
 
 function handleProgress(e) {
   if (e.event === 'progress') {
+    const pct = progress.value.total ? Math.round((e.current / e.total) * 100) : 0
+    console.log(`[流水线] 进度: ${e.stage} → ${e.current}/${e.total} (${pct}%)`)
     progress.value = { current: e.current ?? 0, total: e.total ?? 0 }
     if (e.stage?.includes('Step 1')) currentStage.value = '📷 检测中'
     else if (e.stage?.includes('Step 2')) currentStage.value = '🧠 提取特征中'
     else if (e.stage?.includes('Step 3')) currentStage.value = '🔗 聚类中'
     logs.value.push(`${e.stage}: ${e.current}/${e.total}`)
   } else if (e.event === 'log') {
+    console.log(`[流水线] 日志: ${e.message}`)
     logs.value.push(e.message ?? '')
   } else if (e.event === 'complete') {
+    console.log(`[流水线] ✅ 全流程完成`)
     currentStage.value = '✅ 完成'
     progress.value = { current: 1, total: 1 }
     logs.value.push('✅ 全流程完成！')
@@ -202,6 +228,7 @@ function handleProgress(e) {
     running.value = false
     refreshAfterRun()
   } else if (e.event === 'error') {
+    console.error(`[流水线] ❌ 错误: ${e.message}`)
     logs.value.push(`❌ ${e.message}`)
     msg.error(e.message ?? '失败'); running.value = false
   }

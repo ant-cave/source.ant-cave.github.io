@@ -12,7 +12,7 @@ const router = useRouter();
 
 const tools = [
   { id: "fursee", title: "Fursee", desc: "毛装角色一键分类", icon: "ri-search-eye-line", link: "/fursee" },
-  { id: "placeholder-2", title: "工具 2", desc: "开发中……", icon: "ri-tools-line" },
+  { id: "jpg-compress", title: "JPG 压缩", desc: "在线压缩 JPG 图片", icon: "ri-file-zip-line", link: "/tools/jpg-compress" },
   { id: "placeholder-3", title: "工具 3", desc: "开发中……", icon: "ri-tools-line" },
 ];
 

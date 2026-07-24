@@ -35,6 +35,11 @@ const router = createRouter({
       name: 'FurseeAuto',
       component: () => import('../views/fursee/Auto.vue'),
     },
+    {
+      path: '/tools/jpg-compress',
+      name: 'JpgCompress',
+      component: () => import('../views/JpgCompress.vue'),
+    },
   ],
 })
 

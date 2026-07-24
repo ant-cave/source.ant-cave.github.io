@@ -140,7 +140,8 @@ import { useApi } from '@/composables/useApi'
 import { useWs } from '@/composables/useWs'
 
 const DEV = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
-const IMG_BASE = DEV ? '/fursee/api' : 'https://backend.api.011420.xyz/fursee/api'
+const API_BASE = DEV ? '/fursee/api' : 'https://backend.api.011420.xyz/fursee/api'
+const IMG_BASE = API_BASE
 
 const api = useApi()
 const msg = useMessage()
@@ -349,7 +350,7 @@ async function downloadZip(runId) {
   zipping.value = true
   try {
     const a = document.createElement('a')
-    a.href = `${IMG_BASE}/results/auto/run/${runId}/zip`
+    a.href = `${API_BASE}/classified/${runId}/zip`
     a.download = `auto_${runId}.zip`
     a.click()
   } catch (e) { msg.error(e.message) }

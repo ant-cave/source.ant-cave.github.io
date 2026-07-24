@@ -48,6 +48,7 @@ export function useApi() {
     const form = new FormData()
     files.forEach((f) => form.append('files', f))
     const startTime = Date.now()
+    let serverPhaseTriggered = false
     try {
       const { data } = await api.post(`/images/${category}/upload`, form, {
         onUploadProgress: (e) => {
@@ -59,13 +60,17 @@ export function useApi() {
               console.log(`[上传] 浏览器→服务器 ${rawPct}% — ${(e.loaded / 1024 / 1024).toFixed(2)}/${(e.total / 1024 / 1024).toFixed(2)}MB，${speed}MB/s`)
             }
             if (onProgress) onProgress(pct, 'upload')
+            if (rawPct >= 100 && !serverPhaseTriggered) {
+              serverPhaseTriggered = true
+              console.log(`[上传] 浏览器上传完成，等待服务器处理（压缩+转发上游）...`)
+              if (onProgress) onProgress(50, 'server')
+            }
           }
         },
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
-      console.log(`[上传] 浏览器→服务器完成，耗时 ${elapsed}s，开始服务器处理阶段`)
-      if (onProgress) onProgress(50, 'server')
+      console.log(`[上传] 服务器响应完成，总耗时 ${elapsed}s`)
       return data
     } catch (e) {
       console.error(`[上传] 上传失败: ${e.message}`)

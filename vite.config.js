@@ -14,8 +14,12 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      '/api/auth': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
       '/fursee': {
-        target: 'http://localhost:15898',
+        target: 'http://localhost:8000',
         changeOrigin: true,
         ws: true,
       },

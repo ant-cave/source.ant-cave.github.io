@@ -115,8 +115,7 @@ import {
 import { useApi } from '@/composables/useApi'
 import { useWs } from '@/composables/useWs'
 
-const DEV = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
-const IMG_BASE = DEV ? `http://${location.hostname}:15898/fursee/api` : 'https://backend.api.011420.xyz/fursee/api'
+const IMG_BASE = '/fursee/api'
 
 const api = useApi()
 const msg = useMessage()

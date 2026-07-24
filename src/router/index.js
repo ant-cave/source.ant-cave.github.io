@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../HomePage.vue'
 import ProjectsPage from '../views/ProjectsPage.vue'
+import OAuthCallback from '../views/OAuthCallback.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +20,11 @@ const router = createRouter({
       path: '/project/:id',
       name: 'Project',
       component: ProjectsPage,
+    },
+    {
+      path: '/login/oauth2/code/my-client',
+      name: 'OAuthCallback',
+      component: OAuthCallback,
     },
     {
       path: '/fursee',

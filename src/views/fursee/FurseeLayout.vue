@@ -8,6 +8,13 @@
             <n-layout-header bordered style="height:50px;display:flex;align-items:center;padding:0 12px;background:#1a1a1a;gap:8px">
               <div style="font-size:15px;font-weight:700;color:#fff;letter-spacing:1px">Fursee</div>
               <div style="flex:1" />
+              <template v-if="!authLoading">
+                <n-button v-if="!authUser" quaternary size="tiny" style="color:#aaa" @click="doLogin">登录</n-button>
+                <template v-else>
+                  <span style="color:#888;font-size:12px;margin-right:4px">{{ authUser.username || authUser.sub?.slice(0,8) }}</span>
+                  <n-button quaternary size="tiny" style="color:#aaa" @click="doLogout">退出</n-button>
+                </template>
+              </template>
               <n-button quaternary style="color:#888;padding:4px 8px;font-size:12px" @click="goHome">← 返回首页</n-button>
               <n-tag v-if="showWs" :type="wsConnected ? 'success' : 'error'" size="tiny" round>
                 {{ wsConnected ? '已连接' : '未连接' }}
@@ -31,13 +38,16 @@ import {
   NLayout, NLayoutHeader, NLayoutContent, NButton, NTag,
   zhCN,
 } from 'naive-ui'
+
 import Disclaimer from './Disclaimer.vue'
 import { useWs } from '@/composables/useWs'
 import { useFingerprint } from '@/composables/useFingerprint'
+import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
 const { connected: wsConnected } = useWs()
 const { init: initFp } = useFingerprint()
+const { user: authUser, loading: authLoading, login: doLogin, logout: doLogout } = useAuth()
 
 const themeOverrides = {
   common: {

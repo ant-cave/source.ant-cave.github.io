@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const API_BASE = '/fursee/api'
+const DEV = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+const API_BASE = DEV ? '/fursee/api' : 'https://backend.api.011420.xyz/fursee/api'
 
 const api = axios.create({
   baseURL: API_BASE,

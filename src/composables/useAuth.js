@@ -1,6 +1,7 @@
 import { ref, onMounted } from 'vue'
 
-const AUTH_BASE = '/api/auth'
+const DEV = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+const AUTH_BASE = DEV ? '/api/auth' : 'https://backend.api.011420.xyz/api/auth'
 
 const user = ref(null)
 const loading = ref(true)

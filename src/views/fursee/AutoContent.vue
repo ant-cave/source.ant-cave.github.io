@@ -244,9 +244,15 @@ async function refreshAfterRun() {
 
 async function loadHistory() {
   try {
+    console.log('[历史] 开始加载历史记录...')
     const data = await api.getAutoHistory()
+    console.log('[历史] API返回数据:', JSON.stringify(data).slice(0, 500))
+    console.log('[历史] data.runs类型:', typeof data.runs, '长度:', data.runs?.length)
     historyRuns.value = data.runs || []
-  } catch {}
+    console.log('[历史] historyRuns设置完成，长度:', historyRuns.value.length)
+  } catch (e) {
+    console.error('[历史] 加载失败:', e.message || e)
+  }
 }
 
 function confirmDeleteRun(runId) {

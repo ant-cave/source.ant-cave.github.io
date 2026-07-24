@@ -1,6 +1,11 @@
 <template>
   <div class="auto-page">
     <n-card :title="appendMode ? '追加模式' : '傻瓜模式 — 一键分类'" class="mb-12" v-if="!running && !currentRunId">
+      <div class="quota-bar">
+        <span>📤 上传 {{ quota.upload_used_mb }}/{{ quota.upload_limit_mb }}MB</span>
+        <span>⚙️ 流水线 {{ quota.pipeline_runs }}/{{ quota.pipeline_limit }}次</span>
+        <span class="quota-refresh">{{ quotaRefreshIn }}</span>
+      </div>
       <div class="step-desc" v-if="!appendMode">上传你的毛装角色照片，系统会自动检测、提取特征、聚类分组。完成后可直接下载分类好的 ZIP 压缩包。</div>
       <div class="step-desc" v-else>将新图片追加至已有运行，系统会合并检测并重新聚类。</div>
 
@@ -149,6 +154,33 @@ const appendTargetId = ref('')
 
 const progressPct = computed(() => progress.value.total ? Math.round((progress.value.current / progress.value.total) * 100) : 0)
 
+const quota = ref({ upload_used_mb: 0, upload_limit_mb: 2048, pipeline_runs: 0, pipeline_limit: 8 })
+const quotaRefreshIn = ref('')
+
+async function loadQuota() {
+  try {
+    const res = await fetch('/fursee/api/quota', { credentials: 'include' })
+    if (res.ok) {
+      const data = await res.json()
+      quota.value = data
+      updateRefreshCountdown()
+    }
+  } catch {}
+}
+
+function updateRefreshCountdown() {
+  const now = new Date()
+  const tomorrow = new Date(now)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  tomorrow.setHours(0, 0, 0, 0)
+  const diff = tomorrow - now
+  const h = Math.floor(diff / 3600000)
+  const m = Math.floor((diff % 3600000) / 60000)
+  quotaRefreshIn.value = `${h}小时${m}分后刷新`
+}
+
+let refreshTimer = null
+
 const appendOptions = computed(() =>
   historyRuns.value.map(r => ({ label: `${r.run_id}（${r.total || '?'}张）`, value: r.run_id }))
 )
@@ -169,6 +201,7 @@ async function doUpload(files) {
     uploadCount.value += arr.length
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
     console.log(`[上传] 上传流程完成，累计 ${uploadCount.value} 张，总耗时 ${elapsed}s`)
+    loadQuota()
   } catch (e) {
     console.error(`[上传] 上传流程失败: ${e.message}`)
     msg.error(e.message)
@@ -227,6 +260,7 @@ function handleProgress(e) {
     msg.success('全流程完成！')
     running.value = false
     refreshAfterRun()
+    loadQuota()
   } else if (e.event === 'error') {
     console.error(`[流水线] ❌ 错误: ${e.message}`)
     logs.value.push(`❌ ${e.message}`)
@@ -303,7 +337,11 @@ function resetCurrent() {
   cancelAppend()
 }
 
-onMounted(() => { loadHistory() })
+onMounted(() => {
+  loadHistory()
+  loadQuota()
+  refreshTimer = setInterval(updateRefreshCountdown, 60000)
+})
 </script>
 
 <style scoped>
@@ -315,6 +353,8 @@ onMounted(() => { loadHistory() })
 .upload-area { padding:32px; text-align:center; }
 .upload-title { margin:4px 0; font-size:15px; color:#333; font-weight:500; }
 .upload-hint { margin:4px 0; font-size:12px; color:#999; }
+.quota-bar { display:flex; gap:16px; font-size:12px; color:#666; margin-bottom:12px; padding:8px 12px; background:#f7f8fa; border-radius:6px; flex-wrap:wrap; }
+.quota-refresh { color:#999; margin-left:auto; }
 .upload-summary { margin:12px 0; font-size:13px; color:#666; }
 .action-bar { margin-top:16px; }
 .param-row { display:flex; gap:12px; margin-bottom:8px; }

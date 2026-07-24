@@ -42,40 +42,67 @@ export function useApi() {
   }
 
   async function uploadImages(category, files, onProgress) {
+    const BATCH_LIMIT = 40 * 1024 * 1024
     const totalSize = files.reduce((s, f) => s + f.size, 0)
     const fileNames = files.map(f => f.name).join(', ')
     console.log(`[上传] 开始上传 ${files.length} 张图片，分类=${category}，总大小=${(totalSize / 1024 / 1024).toFixed(2)}MB，文件=[${fileNames}]`)
-    const form = new FormData()
-    files.forEach((f) => form.append('files', f))
-    const startTime = Date.now()
-    let serverPhaseTriggered = false
-    try {
-      const { data } = await api.post(`/images/${category}/upload`, form, {
-        onUploadProgress: (e) => {
-          if (e.total) {
-            const rawPct = Math.round((e.loaded / e.total) * 100)
-            const pct = Math.round(rawPct * 0.5)
-            const speed = e.total > 0 ? ((e.loaded / 1024 / 1024) / ((Date.now() - startTime) / 1000)).toFixed(1) : '?'
-            if (rawPct % 10 === 0 || rawPct >= 100) {
-              console.log(`[上传] 浏览器→服务器 ${rawPct}% — ${(e.loaded / 1024 / 1024).toFixed(2)}/${(e.total / 1024 / 1024).toFixed(2)}MB，${speed}MB/s`)
-            }
-            if (onProgress) onProgress(pct, 'upload')
-            if (rawPct >= 100 && !serverPhaseTriggered) {
-              serverPhaseTriggered = true
-              console.log(`[上传] 浏览器上传完成，等待服务器处理（压缩+转发上游）...`)
-              if (onProgress) onProgress(50, 'server')
-            }
-          }
-        },
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
-      console.log(`[上传] 服务器响应完成，总耗时 ${elapsed}s`)
-      return data
-    } catch (e) {
-      console.error(`[上传] 上传失败: ${e.message}`)
-      throw e
+
+    const batches = []
+    let batch = []
+    let batchSize = 0
+    for (const f of files) {
+      if (batchSize + f.size > BATCH_LIMIT && batch.length > 0) {
+        batches.push(batch)
+        batch = []
+        batchSize = 0
+      }
+      batch.push(f)
+      batchSize += f.size
     }
+    if (batch.length) batches.push(batch)
+    console.log(`[上传] 分为 ${batches.length} 批，每批限制 ${BATCH_LIMIT / 1024 / 1024}MB`)
+
+    const startTime = Date.now()
+    let uploadedBytes = 0
+    const allUploaded = []
+
+    for (let i = 0; i < batches.length; i++) {
+      const b = batches[i]
+      const bSize = b.reduce((s, f) => s + f.size, 0)
+      console.log(`[上传] 第 ${i + 1}/${batches.length} 批：${b.length} 张，${(bSize / 1024 / 1024).toFixed(2)}MB`)
+
+      const form = new FormData()
+      b.forEach((f) => form.append('files', f))
+
+      try {
+        const { data } = await api.post(`/images/${category}/upload`, form, {
+          onUploadProgress: (e) => {
+            if (e.total) {
+              const batchPct = e.loaded / e.total
+              const overallLoaded = uploadedBytes + e.loaded
+              const pct = Math.round((overallLoaded / totalSize) * 50)
+              const speed = e.total > 0 ? ((e.loaded / 1024 / 1024) / ((Date.now() - startTime) / 1000)).toFixed(1) : '?'
+              if (Math.round(batchPct * 100) % 10 === 0 || batchPct >= 1) {
+                console.log(`[上传] 批${i + 1} ${Math.round(batchPct * 100)}% — 总进度 ${(overallLoaded / 1024 / 1024).toFixed(1)}/${(totalSize / 1024 / 1024).toFixed(1)}MB，${speed}MB/s`)
+              }
+              if (onProgress) onProgress(pct, 'upload')
+            }
+          },
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        if (data.uploaded) allUploaded.push(...data.uploaded)
+        uploadedBytes += bSize
+      } catch (e) {
+        console.error(`[上传] 第 ${i + 1} 批失败: ${e.message}`)
+        throw e
+      }
+    }
+
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
+    console.log(`[上传] 全部 ${batches.length} 批上传完成，共 ${allUploaded.length} 张，总耗时 ${elapsed}s`)
+
+    if (onProgress) onProgress(50, 'server')
+    return { uploaded: allUploaded, count: allUploaded.length }
   }
 
   async function deleteImage(category, filename) {

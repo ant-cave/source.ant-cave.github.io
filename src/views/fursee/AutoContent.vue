@@ -30,7 +30,14 @@
         </div>
         <div class="upload-area" v-else>
           <n-progress type="line" :percentage="uploadPct" indicator-placement="inside" style="max-width:300px;margin:0 auto" />
-          <p class="upload-hint" style="margin-top:4px">{{ uploadPct >= 100 ? '服务端处理中…' : uploadPct + '%' }}</p>
+          <div class="upload-phase" v-if="uploadPhase === 'upload'">
+            <i class="ri-upload-2-line"></i> 正在上传到服务器…
+          </div>
+          <div class="upload-phase" v-else-if="uploadPhase === 'server'">
+            <n-spin :size="14" />
+            服务器处理中…
+          </div>
+          <p class="upload-hint" style="margin-top:4px">{{ uploadPct }}%</p>
         </div>
       </div>
 
@@ -91,7 +98,13 @@
     </template>
 
     <n-card title="历史记录" class="mb-12">
-      <template v-if="historyRuns.length">
+      <template v-if="historyLoading">
+        <div class="history-loading">
+          <n-spin :size="18" />
+          <span>加载历史记录…</span>
+        </div>
+      </template>
+      <template v-else-if="historyRuns.length">
         <n-collapse>
           <n-collapse-item v-for="run in historyRuns" :key="run.run_id" :title="`${run.run_id} · ${run.total || '?'} 张图片`" :name="run.run_id" display-directive="show">
             <div class="result-toolbar" style="margin-bottom:8px">
@@ -120,7 +133,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import {
-  NCard, NButton, NProgress, NCollapse, NCollapseItem, NEmpty,
+  NCard, NButton, NProgress, NCollapse, NCollapseItem, NEmpty, NSpin,
   NSlider, NInputNumber, NSelect, NTooltip, useMessage, useDialog,
 } from 'naive-ui'
 import { useApi } from '@/composables/useApi'
@@ -139,6 +152,7 @@ const dragOver = ref(false)
 const uploading = ref(false)
 const uploadPct = ref(0)
 const uploadCount = ref(0)
+const uploadPhase = ref('')
 
 const conf = ref(0.5)
 const iou = ref(0.45)
@@ -155,6 +169,7 @@ const zipping = ref(false)
 const currentRunId = ref('')
 const currentRun = ref(null)
 const historyRuns = ref([])
+const historyLoading = ref(true)
 const appendMode = ref(false)
 const appendTargetId = ref('')
 
@@ -197,13 +212,27 @@ async function doUpload(files) {
   if (rejected.length) console.warn(`[上传] 跳过 ${rejected.length} 个不支持的文件: ${rejected.map(f => f.name).join(', ')}`)
   if (!arr.length) return
   console.log(`[上传] 开始上传流程，有效文件 ${arr.length} 张`)
-  uploading.value = true; uploadPct.value = 0
+  uploading.value = true; uploadPct.value = 0; uploadPhase.value = 'upload'
   const startTime = Date.now()
+  let serverTimer = null
   try {
-    await api.uploadImages('auto_uploads', arr, (p) => {
-      uploadPct.value = p
-      if (p >= 100) console.log(`[上传] HTTP字节已全部发送，等待服务端响应…`)
+    const uploadTask = api.uploadImages('auto_uploads', arr, (p, phase) => {
+      if (phase === 'server') {
+        uploadPhase.value = 'server'
+        uploadPct.value = 50
+        let fakePct = 50
+        serverTimer = setInterval(() => {
+          if (fakePct < 95) {
+            fakePct += Math.random() * 3 + 1
+            if (fakePct > 95) fakePct = 95
+            uploadPct.value = Math.round(fakePct)
+          }
+        }, 500)
+      } else {
+        uploadPct.value = p
+      }
     })
+    await uploadTask
     uploadCount.value += arr.length
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
     console.log(`[上传] 上传流程完成，累计 ${uploadCount.value} 张，总耗时 ${elapsed}s`)
@@ -213,7 +242,8 @@ async function doUpload(files) {
     msg.error(e.message)
   }
   finally {
-    uploading.value = false; uploadPct.value = 0
+    if (serverTimer) clearInterval(serverTimer)
+    uploading.value = false; uploadPct.value = 0; uploadPhase.value = ''
     console.log(`[上传] 上传状态已重置`)
   }
 }
@@ -283,6 +313,7 @@ async function refreshAfterRun() {
 }
 
 async function loadHistory() {
+  historyLoading.value = true
   try {
     console.log('[历史] 开始加载历史记录...')
     const data = await api.getAutoHistory()
@@ -292,6 +323,8 @@ async function loadHistory() {
     console.log('[历史] historyRuns设置完成，长度:', historyRuns.value.length)
   } catch (e) {
     console.error('[历史] 加载失败:', e.message || e)
+  } finally {
+    historyLoading.value = false
   }
 }
 
@@ -359,10 +392,13 @@ onMounted(() => {
 .upload-area { padding:32px; text-align:center; }
 .upload-title { margin:4px 0; font-size:15px; color:#333; font-weight:500; }
 .upload-hint { margin:4px 0; font-size:12px; color:#999; }
+.upload-phase { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:6px; font-size:13px; color:#666; }
+.upload-phase i { font-size:16px; }
 .quota-bar { display:flex; gap:16px; font-size:12px; color:#666; margin-bottom:12px; padding:8px 12px; background:#f7f8fa; border-radius:6px; flex-wrap:wrap; align-items:center; }
 .quota-bar i { font-size:14px; vertical-align:-1px; }
 .quota-refresh { color:#999; margin-left:auto; }
 .quota-info { cursor:pointer; color:#999; margin-left:4px; font-size:13px; }
+.history-loading { display:flex; align-items:center; justify-content:center; gap:8px; padding:20px; color:#999; font-size:13px; }
 .upload-summary { margin:12px 0; font-size:13px; color:#666; }
 .action-bar { margin-top:16px; }
 .param-row { display:flex; gap:12px; margin-bottom:8px; }

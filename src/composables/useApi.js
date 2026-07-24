@@ -5,7 +5,7 @@ const API_BASE = DEV ? '/fursee/api' : 'https://backend.api.011420.xyz/fursee/ap
 
 const api = axios.create({
   baseURL: API_BASE,
-  timeout: 30000,
+  timeout: 120000,
   withCredentials: true,
 })
 
@@ -49,21 +49,26 @@ export function useApi() {
     files.forEach((f) => form.append('files', f))
     const startTime = Date.now()
     try {
-      const { data } = await api.post(`/images/${category}/upload`, form, {
+      const uploadPromise = api.post(`/images/${category}/upload`, form, {
         onUploadProgress: (e) => {
           if (e.total) {
-            const pct = Math.round((e.loaded / e.total) * 100)
+            const rawPct = Math.round((e.loaded / e.total) * 100)
+            const pct = Math.round(rawPct * 0.5)
             const speed = e.total > 0 ? ((e.loaded / 1024 / 1024) / ((Date.now() - startTime) / 1000)).toFixed(1) : '?'
-            if (pct % 10 === 0 || pct >= 100) {
-              console.log(`[上传] 进度 ${pct}% — 已上传 ${(e.loaded / 1024 / 1024).toFixed(2)}/${(e.total / 1024 / 1024).toFixed(2)}MB，速度 ${speed}MB/s`)
+            if (rawPct % 10 === 0 || rawPct >= 100) {
+              console.log(`[上传] 浏览器→服务器 ${rawPct}% — ${(e.loaded / 1024 / 1024).toFixed(2)}/${(e.total / 1024 / 1024).toFixed(2)}MB，${speed}MB/s`)
             }
-            if (onProgress) onProgress(pct)
+            if (onProgress) onProgress(pct, 'upload')
           }
         },
         headers: { 'Content-Type': 'multipart/form-data' },
       })
+
+      if (onProgress) onProgress(50, 'server')
+
+      const { data } = await uploadPromise
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
-      console.log(`[上传] HTTP上传完成，耗时 ${elapsed}s，响应状态=${data?.status || 'ok'}`)
+      console.log(`[上传] 全部完成，耗时 ${elapsed}s`)
       return data
     } catch (e) {
       console.error(`[上传] 上传失败: ${e.message}`)

@@ -49,7 +49,7 @@ export function useApi() {
     files.forEach((f) => form.append('files', f))
     const startTime = Date.now()
     try {
-      const uploadPromise = api.post(`/images/${category}/upload`, form, {
+      const { data } = await api.post(`/images/${category}/upload`, form, {
         onUploadProgress: (e) => {
           if (e.total) {
             const rawPct = Math.round((e.loaded / e.total) * 100)
@@ -63,12 +63,9 @@ export function useApi() {
         },
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-
-      if (onProgress) onProgress(50, 'server')
-
-      const { data } = await uploadPromise
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
-      console.log(`[上传] 全部完成，耗时 ${elapsed}s`)
+      console.log(`[上传] 浏览器→服务器完成，耗时 ${elapsed}s，开始服务器处理阶段`)
+      if (onProgress) onProgress(50, 'server')
       return data
     } catch (e) {
       console.error(`[上传] 上传失败: ${e.message}`)

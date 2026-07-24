@@ -180,7 +180,8 @@ const quotaRefreshIn = ref('')
 
 async function loadQuota() {
   try {
-    const res = await fetch('/fursee/api/quota', { credentials: 'include' })
+    const quotaUrl = DEV ? '/fursee/api/quota' : `${IMG_BASE}/quota`
+    const res = await fetch(quotaUrl, { credentials: 'include' })
     if (res.ok) {
       const data = await res.json()
       quota.value = data

@@ -315,6 +315,7 @@ function handleProgress(e) {
     progress.value = { current: 1, total: 1 }
     logs.value.push('全流程完成！')
     msg.success('全流程完成！')
+    uploadCount.value = 0
     running.value = false
     refreshAfterRun()
     loadQuota()
@@ -326,9 +327,10 @@ function handleProgress(e) {
 }
 
 async function refreshAfterRun() {
+  uploadCount.value = 0
   await loadHistory()
   if (historyRuns.value.length) {
-    const latest = historyRuns.value[historyRuns.value.length - 1]
+    const latest = historyRuns.value.reduce((a, b) => (a.timestamp > b.timestamp ? a : b))
     expandedHistoryRunId.value = latest.run_id
     currentRunId.value = ''
     currentRun.value = null

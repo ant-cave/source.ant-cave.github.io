@@ -67,7 +67,7 @@ export function useApi() {
         const chunk = file.slice(start, end)
 
         const startTime = Date.now()
-        await api.post(`/${category}/chunk`, chunk, {
+        await api.post(`/images/${category}/chunk`, chunk, {
           headers: {
             'Content-Type': 'application/octet-stream',
             'X-Upload-Id': uploadId,
@@ -91,7 +91,7 @@ export function useApi() {
     console.log(`[上传] 所有分片上传完毕，开始终结处理（压缩 + 转发上游）...`)
     if (onProgress) onProgress(80, 'server')
 
-    const { data } = await api.post(`/${category}/finalize`, null, {
+    const { data } = await api.post(`/images/${category}/finalize`, null, {
       timeout: 300000,
     })
 

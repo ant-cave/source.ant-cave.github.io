@@ -3,11 +3,13 @@
     <div class="disclaimer-body">
       <p><strong>隐私与数据</strong></p>
       <ul>
-        <li>上传的图片仅用于本次分类处理，不会用于训练模型或任何其他目的</li>
+        <li>上传的图片仅用于本次分类处理，<span class="highlight">不会用于训练模型或任何其他目的</span></li>
         <li>处理结果（包括原图及分组）将在 72 小时后自动从服务器彻底删除</li>
         <li>您也可以随时手动删除任意历史记录，对应文件会立即清除</li>
         <li>您的图片数据不会出售、分享或传播给任何第三方</li>
       </ul>
+      <p><strong>关于登录</strong></p>
+      <p>本服务使用<a href="https://account.qzhua.net" target="_blank" rel="noopener">轻爪账号</a>提供统一认证，仅用于验证用户身份、防止恶意滥用。轻爪本身不参与图片处理，也不会获取您的图片数据。</p>
       <p><strong>版权与许可</strong></p>
       <p>Fursee &copy; Jundi Wu · GUI Shell by ant-cave · AGPL-3.0</p>
       <p class="disclaimer-footer">点击「我已了解」即表示接受上述条款</p>
@@ -47,5 +49,8 @@ defineExpose({ open })
 .disclaimer-body { font-size: 13px; line-height: 1.7; color: #333; }
 .disclaimer-body ul { padding-left: 18px; margin: 8px 0; }
 .disclaimer-body li { margin-bottom: 6px; }
+.disclaimer-body a { color: #1677ff; text-decoration: none; }
+.disclaimer-body a:hover { text-decoration: underline; }
 .disclaimer-footer { margin-top: 12px; font-size: 12px; color: #999; }
+.highlight { color: #f5222d; font-weight: 700; }
 </style>

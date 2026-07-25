@@ -11,6 +11,7 @@
               <template v-if="!authLoading">
                 <n-button v-if="!authUser" quaternary size="tiny" style="color:#aaa" @click="doLogin">登录</n-button>
                 <template v-else>
+                  <img v-if="authUser.picture" :src="authUser.picture" alt="" class="user-avatar" />
                   <span style="color:#888;font-size:12px;margin-right:4px">{{ authUser.username || authUser.sub?.slice(0,8) }}</span>
                   <n-button quaternary size="tiny" style="color:#aaa" @click="doLogout">退出</n-button>
                 </template>
@@ -105,6 +106,7 @@ function goHome() {
 .footer-line a { color:#666; text-decoration:none; }
 .footer-line a:hover { color:#333; text-decoration:underline; }
 .footer-sub { font-size:11px; color:#bbb; margin-top:2px; }
+.user-avatar { width:22px; height:22px; border-radius:50%; object-fit:cover; margin-right:6px; vertical-align:middle; border:1px solid #555; }
 @media (max-width:768px) {
   .fursee-header-bar { flex-wrap:wrap; gap:4px; height:auto !important; min-height:50px; padding:6px 8px !important; }
   .fursee-footer { padding:16px 8px 12px; }

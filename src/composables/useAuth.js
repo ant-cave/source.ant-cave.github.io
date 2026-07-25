@@ -31,6 +31,7 @@ export function useAuth() {
       const data = await res.json()
       if (data.authorize_url) {
         sessionStorage.setItem('pkce_code_verifier', data.code_verifier)
+        sessionStorage.setItem('pkce_state', data.state)
         window.location.href = data.authorize_url
       }
     } catch (e) {
@@ -39,11 +40,13 @@ export function useAuth() {
   }
 
   async function handleCallback(code, codeVerifier) {
+    const state = sessionStorage.getItem('pkce_state') || ''
+    sessionStorage.removeItem('pkce_state')
     const res = await fetch(`${AUTH_BASE}/token`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, code_verifier: codeVerifier }),
+      body: JSON.stringify({ code, code_verifier: codeVerifier, state }),
     })
     if (!res.ok) throw new Error('Token exchange failed')
     const data = await res.json()

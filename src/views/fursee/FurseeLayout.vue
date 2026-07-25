@@ -60,10 +60,7 @@ const { init: initFp } = useFingerprint()
 const { user: authUser, loading: authLoading, login: doLogin, logout: doLogout } = useAuth()
 
 function handleLogout() {
-  doLogout().then(() => {
-    const postLogout = encodeURIComponent(window.location.origin)
-    window.location.href = `https://account-api.qzhua.net/connect/logout?post_logout_redirect_uri=${postLogout}`
-  })
+  doLogout().then(() => window.location.reload())
 }
 
 const disclaimerRef = ref(null)

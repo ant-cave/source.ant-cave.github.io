@@ -1,6 +1,15 @@
 import { ref } from "vue";
 import axios from "axios";
 
+function isSafeUrl(url) {
+  try {
+    const parsed = new URL(url);
+    return ["http:", "https:"].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
+
 export function useBingBackground() {
   const bgInfo = ref({ copyright: "", copyright_link: "" });
 
@@ -21,7 +30,7 @@ export function useBingBackground() {
     if (cachedData && cachedTime && cachedCopyright && cachedCopyrightLink) {
       const today = new Date().toDateString();
       const cacheDate = new Date(cachedTime).toDateString();
-      if (today === cacheDate) {
+      if (today === cacheDate && isSafeUrl(cachedData)) {
         await preloadImage(cachedData);
         applyBackground(cachedData);
         bgInfo.value = { copyright: cachedCopyright, copyright_link: cachedCopyrightLink };
@@ -32,6 +41,7 @@ export function useBingBackground() {
     try {
       const res = await axios.get("https://bing.biturl.top");
       const { url, copyright, copyright_link } = res.data;
+      if (!isSafeUrl(url)) return;
       await preloadImage(url);
       applyBackground(url);
       localStorage.setItem("bingBackgroundImage", url);
@@ -45,6 +55,7 @@ export function useBingBackground() {
   };
 
   const applyBackground = (url) => {
+    if (!isSafeUrl(url)) return;
     const el = document.querySelector(".background-image");
     const frontEl = document.querySelector(".background-image-front");
     if (el) {

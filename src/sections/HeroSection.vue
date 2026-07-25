@@ -1,5 +1,5 @@
 <script setup>
-import { toRef } from "vue";
+import { toRef, computed } from "vue";
 
 const props = defineProps({
   bgInfo: { type: Object, required: true },
@@ -8,6 +8,24 @@ const props = defineProps({
 
 const emit = defineEmits(["navigate"]);
 const bgInfo = toRef(props, "bgInfo");
+
+function isSafeUrl(url) {
+  try {
+    const parsed = new URL(url);
+    return ["http:", "https:"].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
+
+const safeCopyrightLink = computed(() => {
+  return isSafeUrl(bgInfo.value.copyright_link) ? bgInfo.value.copyright_link : "#";
+});
+
+const safeImageUrl = computed(() => {
+  const url = props.getImageUrl();
+  return isSafeUrl(url) ? url : "#";
+});
 </script>
 
 <template>
@@ -18,8 +36,8 @@ const bgInfo = toRef(props, "bgInfo");
           <span class="info-label">背景<br /></span>
           <span class="info-content">{{ bgInfo.copyright }}</span>
         </div>
-        <a :href="bgInfo.copyright_link" class="source-link" target="_blank">原图来源</a>
-        <a :href="props.getImageUrl()" class="source-link" target="_blank">原图链接</a>
+        <a :href="safeCopyrightLink" class="source-link" target="_blank">原图来源</a>
+        <a :href="safeImageUrl" class="source-link" target="_blank">原图链接</a>
       </div>
     </div>
 

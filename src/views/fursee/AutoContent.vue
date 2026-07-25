@@ -216,22 +216,16 @@ async function doUpload(files) {
   console.log(`[上传] 开始上传流程，有效文件 ${arr.length} 张`)
   uploading.value = true; uploadPct.value = 0; uploadPhase.value = 'upload'
   const startTime = Date.now()
-  let serverTimer = null
   try {
     const uploadTask = api.uploadImages('auto_uploads', arr, (p, phase) => {
-      if (phase === 'server') {
-        uploadPhase.value = 'server'
-        uploadPct.value = 50
-        let fakePct = 50
-        serverTimer = setInterval(() => {
-          if (fakePct < 95) {
-            fakePct += Math.random() * 3 + 1
-            if (fakePct > 95) fakePct = 95
-            uploadPct.value = Math.round(fakePct)
-          }
-        }, 500)
-      } else {
+      if (phase === 'upload') {
+        uploadPhase.value = 'upload'
         uploadPct.value = p
+      } else if (phase === 'server') {
+        uploadPhase.value = 'server'
+        uploadPct.value = p
+      } else if (phase === 'done') {
+        uploadPct.value = 100
       }
     })
     await uploadTask
@@ -244,7 +238,6 @@ async function doUpload(files) {
     msg.error(e.message)
   }
   finally {
-    if (serverTimer) clearInterval(serverTimer)
     uploading.value = false; uploadPct.value = 0; uploadPhase.value = ''
     console.log(`[上传] 上传状态已重置`)
   }

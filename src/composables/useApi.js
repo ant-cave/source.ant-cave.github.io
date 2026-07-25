@@ -30,6 +30,8 @@ api.interceptors.response.use(
   },
 )
 
+const CHUNK_SIZE = 1 * 1024 * 1024
+
 export function useApi() {
   async function getStats() {
     const { data } = await api.get('/stats')
@@ -42,67 +44,61 @@ export function useApi() {
   }
 
   async function uploadImages(category, files, onProgress) {
-    const BATCH_LIMIT = 40 * 1024 * 1024
-    const totalSize = files.reduce((s, f) => s + f.size, 0)
-    const fileNames = files.map(f => f.name).join(', ')
-    console.log(`[上传] 开始上传 ${files.length} 张图片，分类=${category}，总大小=${(totalSize / 1024 / 1024).toFixed(2)}MB，文件=[${fileNames}]`)
+    const arr = Array.from(files).filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f.name))
+    if (!arr.length) return { uploaded: [], count: 0 }
 
-    const batches = []
-    let batch = []
-    let batchSize = 0
-    for (const f of files) {
-      if (batchSize + f.size > BATCH_LIMIT && batch.length > 0) {
-        batches.push(batch)
-        batch = []
-        batchSize = 0
-      }
-      batch.push(f)
-      batchSize += f.size
-    }
-    if (batch.length) batches.push(batch)
-    console.log(`[上传] 分为 ${batches.length} 批，每批限制 ${BATCH_LIMIT / 1024 / 1024}MB`)
+    const totalSize = arr.reduce((s, f) => s + f.size, 0)
+    const totalChunks = arr.reduce((s, f) => s + Math.ceil(f.size / CHUNK_SIZE), 0)
+    const uploadId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)
 
-    const startTime = Date.now()
-    let uploadedBytes = 0
-    const allUploaded = []
+    console.log(`[上传] 开始分片上传：${arr.length} 个文件，总大小 ${(totalSize / 1024 / 1024).toFixed(2)}MB，共 ${totalChunks} 片（每片 1MB）`)
 
-    for (let i = 0; i < batches.length; i++) {
-      const b = batches[i]
-      const bSize = b.reduce((s, f) => s + f.size, 0)
-      console.log(`[上传] 第 ${i + 1}/${batches.length} 批：${b.length} 张，${(bSize / 1024 / 1024).toFixed(2)}MB`)
+    let uploadedChunks = 0
+    const uploadedFiles = []
 
-      const form = new FormData()
-      b.forEach((f) => form.append('files', f))
+    for (let fi = 0; fi < arr.length; fi++) {
+      const file = arr[fi]
+      const fileChunks = Math.ceil(file.size / CHUNK_SIZE)
+      console.log(`[上传] 文件 ${fi + 1}/${arr.length}: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB, ${fileChunks} 片)`)
 
-      try {
-        const { data } = await api.post(`/images/${category}/upload`, form, {
-          onUploadProgress: (e) => {
-            if (e.total) {
-              const batchPct = e.loaded / e.total
-              const overallLoaded = uploadedBytes + e.loaded
-              const pct = Math.round((overallLoaded / totalSize) * 50)
-              const speed = e.total > 0 ? ((e.loaded / 1024 / 1024) / ((Date.now() - startTime) / 1000)).toFixed(1) : '?'
-              if (Math.round(batchPct * 100) % 10 === 0 || batchPct >= 1) {
-                console.log(`[上传] 批${i + 1} ${Math.round(batchPct * 100)}% — 总进度 ${(overallLoaded / 1024 / 1024).toFixed(1)}/${(totalSize / 1024 / 1024).toFixed(1)}MB，${speed}MB/s`)
-              }
-              if (onProgress) onProgress(pct, 'upload')
-            }
+      for (let ci = 0; ci < fileChunks; ci++) {
+        const start = ci * CHUNK_SIZE
+        const end = Math.min(start + CHUNK_SIZE, file.size)
+        const chunk = file.slice(start, end)
+
+        const startTime = Date.now()
+        await api.post(`/${category}/chunk`, chunk, {
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'X-Upload-Id': uploadId,
+            'X-Filename': file.name,
+            'X-Chunk-Index': String(ci),
+            'X-Chunk-Total': String(fileChunks),
           },
-          headers: { 'Content-Type': 'multipart/form-data' },
         })
-        if (data.uploaded) allUploaded.push(...data.uploaded)
-        uploadedBytes += bSize
-      } catch (e) {
-        console.error(`[上传] 第 ${i + 1} 批失败: ${e.message}`)
-        throw e
+
+        uploadedChunks++
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
+        const pct = Math.round((uploadedChunks / totalChunks) * 80)
+        const speed = ((end - start) / 1024 / 1024 / parseFloat(elapsed || '0.01')).toFixed(1)
+        console.log(`[上传] ✅ ${file.name} 分片 ${ci + 1}/${fileChunks} 完成 (${elapsed}s, ${speed}MB/s) → 总进度 ${uploadedChunks}/${totalChunks} (${pct}%)`)
+        if (onProgress) onProgress(pct, 'upload')
       }
+
+      uploadedFiles.push(file.name)
     }
 
-    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
-    console.log(`[上传] 全部 ${batches.length} 批上传完成，共 ${allUploaded.length} 张，总耗时 ${elapsed}s`)
+    console.log(`[上传] 所有分片上传完毕，开始终结处理（压缩 + 转发上游）...`)
+    if (onProgress) onProgress(80, 'server')
 
-    if (onProgress) onProgress(50, 'server')
-    return { uploaded: allUploaded, count: allUploaded.length }
+    const { data } = await api.post(`/${category}/finalize`, null, {
+      timeout: 300000,
+    })
+
+    console.log(`[上传] ✅ 终结处理完成`)
+    if (onProgress) onProgress(100, 'done')
+
+    return data
   }
 
   async function deleteImage(category, filename) {

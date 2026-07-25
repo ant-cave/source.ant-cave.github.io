@@ -108,30 +108,7 @@
       </div>
     </n-card>
 
-    <template v-if="currentRun">
-      <n-card class="mb-12 current-run" size="small">
-        <template #header>
-          <div class="current-run-header">
-            <span>当前运行 · {{ currentRun.run_id }} · {{ currentRun.total }} 张图片</span>
-            <n-button size="tiny" @click="resetCurrent"><i class="ri-upload-2-line" style="margin-right:2px"></i> 上传新图片</n-button>
-          </div>
-        </template>
-        <div class="result-toolbar">
-          <n-button type="primary" @click="downloadZip(currentRun.run_id)" :loading="zipping" size="small"><i class="ri-download-line" style="margin-right:4px"></i> 下载全部 (ZIP)</n-button>
-        </div>
-        <div v-for="entry in currentRun.entries" :key="entry.name" style="margin-top:10px">
-          <div class="result-title">{{ entry.name }}</div>
-          <div class="result-grid">
-            <div v-for="img in entry.images" :key="img" class="result-img-wrap">
-              <img :src="`${IMG_BASE}/results/auto/run/${currentRun.run_id}/image/${entry.name}/${encodeURIComponent(img)}?thumb=1`" :alt="img" class="result-img" />
-              <div class="result-label">{{ img }}</div>
-            </div>
-          </div>
-        </div>
-      </n-card>
-    </template>
-
-    <n-card title="历史记录" class="mb-12">
+    <n-card ref="historySectionRef" title="历史记录" class="mb-12" id="history-section">
       <template v-if="historyLoading">
         <div class="history-loading">
           <n-spin :size="18" />
@@ -139,7 +116,7 @@
         </div>
       </template>
       <template v-else-if="historyRuns.length">
-        <n-collapse>
+        <n-collapse v-model:expanded-names="expandedHistoryRunId">
           <n-collapse-item v-for="run in historyRuns" :key="run.run_id" :title="`${run.run_id} · ${run.total || '?'} 张图片`" :name="run.run_id" display-directive="show">
             <div class="result-toolbar" style="margin-bottom:8px">
               <n-button size="tiny" @click="downloadZip(run.run_id)" :loading="zipping"><i class="ri-download-line" style="margin-right:2px"></i> 下载全部 (ZIP)</n-button>
@@ -207,6 +184,8 @@ const currentRunId = ref('')
 const currentRun = ref(null)
 const historyRuns = ref([])
 const historyLoading = ref(true)
+const expandedHistoryRunId = ref('')
+const historySectionRef = ref(null)
 const appendMode = ref(false)
 const appendTargetId = ref('')
 const logBoxRef = ref(null)
@@ -296,6 +275,7 @@ async function startAuto() {
   console.log(`[流水线] 启动一键分类，图片数=${uploadCount.value}，追加模式=${appendMode.value}`)
   running.value = true; logs.value = []; progress.value = { current: 0, total: 0 }
   currentRunId.value = ''; currentRun.value = null
+  expandedHistoryRunId.value = ''
   currentStage.value = '检测中'
   try {
     const existingId = appendMode.value ? appendTargetId.value : ''
@@ -348,8 +328,13 @@ function handleProgress(e) {
 async function refreshAfterRun() {
   await loadHistory()
   if (historyRuns.value.length) {
-    currentRun.value = historyRuns.value[historyRuns.value.length - 1]
-    currentRunId.value = currentRun.value.run_id
+    const latest = historyRuns.value[historyRuns.value.length - 1]
+    expandedHistoryRunId.value = latest.run_id
+    currentRunId.value = ''
+    currentRun.value = null
+    await nextTick()
+    const el = document.getElementById('history-section')
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 }
 
@@ -414,6 +399,7 @@ function resetCurrent() {
   uploadCount.value = 0
   logs.value = []
   progress.value = { current: 0, total: 0 }
+  expandedHistoryRunId.value = ''
   cancelAppend()
 }
 
@@ -459,14 +445,12 @@ watch(authUser, (newUser, oldUser) => {
 .slider-val { margin-left:8px; color:#666; font-size:12px; }
 .log-line { font-size:12px; color:#666; padding:2px 0; font-family:monospace; }
 .log-box { max-height:240px; overflow-y:auto; background:#f7f8fa; border-radius:6px; padding:8px 12px; border:1px solid #eee; }
-.current-run-header { display:flex; justify-content:space-between; align-items:center; width:100%; }
 .result-toolbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
 .result-title { font-weight:600; font-size:13px; margin-bottom:4px; color:#333; }
 .result-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px,1fr)); gap:6px; }
 .result-img-wrap { border:1px solid #eee; border-radius:6px; overflow:hidden; background:#fff; content-visibility:auto; contain-intrinsic-size:100px; }
 .result-img { width:100%; height:100px; object-fit:cover; display:block; }
 .result-label { padding:2px 4px; font-size:10px; color:#666; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.current-run { border:1px solid #333 !important; }
 
 /* 登录提示 */
 .login-gate { border:2px dashed #d9d9d9; }

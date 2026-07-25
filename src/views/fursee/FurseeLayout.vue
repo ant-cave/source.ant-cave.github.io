@@ -13,7 +13,7 @@
                 <template v-else>
                   <img v-if="authUser.picture" :src="authUser.picture" alt="" class="user-avatar" />
                   <span style="color:#888;font-size:12px;margin-right:4px">{{ authUser.username || authUser.sub?.slice(0,8) }}</span>
-                  <n-button quaternary size="tiny" style="color:#aaa" @click="doLogout">退出</n-button>
+                  <n-button quaternary size="tiny" style="color:#aaa" @click="handleLogout">退出</n-button>
                 </template>
               </template>
               <n-button quaternary size="tiny" style="color:#888" @click="showDisclaimer">使用须知</n-button>
@@ -58,6 +58,10 @@ const router = useRouter()
 const { connected: wsConnected } = useWs()
 const { init: initFp } = useFingerprint()
 const { user: authUser, loading: authLoading, login: doLogin, logout: doLogout } = useAuth()
+
+function handleLogout() {
+  doLogout().then(() => window.location.reload())
+}
 
 const disclaimerRef = ref(null)
 

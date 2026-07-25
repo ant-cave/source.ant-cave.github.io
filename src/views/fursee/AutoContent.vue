@@ -6,7 +6,7 @@
         <div class="login-gate-icon"><i class="ri-lock-line"></i></div>
         <div class="login-gate-title">登录后使用智能分类</div>
         <div class="login-gate-desc">
-          登录后可享受每日 2GB 上传额度与 8 次分类算力。<br>
+          登录后可享受每日 1GB 上传额度与 5 次分类算力。<br>
           您的图片数据仅用于分类处理，72 小时后自动清除，不会被用于其他用途。
         </div>
         <n-button type="primary" size="large" @click="doLogin" style="margin-top:12px">

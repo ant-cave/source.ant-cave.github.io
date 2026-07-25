@@ -46,7 +46,7 @@ import { useRouter } from 'vue-router'
 import {
   NConfigProvider, NDialogProvider, NMessageProvider,
   NLayout, NLayoutHeader, NLayoutContent, NButton, NTag,
-  zhCN,
+  zhCN, useDialog,
 } from 'naive-ui'
 
 import Disclaimer from './Disclaimer.vue'
@@ -55,12 +55,27 @@ import { useFingerprint } from '@/composables/useFingerprint'
 import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
+const dialog = useDialog()
 const { connected: wsConnected } = useWs()
 const { init: initFp } = useFingerprint()
 const { user: authUser, loading: authLoading, login: doLogin, logout: doLogout } = useAuth()
 
 function handleLogout() {
-  doLogout().then(() => window.location.reload())
+  dialog.info({
+    title: '退出登录',
+    content: '由于认证系统机制，单纯退出本站无法完全注销账户。请在新打开的页面中，点击右上角头像图标，选择「退出登录」后再回到本站。',
+    positiveText: '我已确认退出账户',
+    negativeText: '打开账户中心',
+    negativeProps: { type: 'primary' },
+    onNegativeClick: () => {
+      window.open('https://account.qzhua.net/console?tab=profile', '_blank')
+      return false
+    },
+    onPositiveClick: async () => {
+      await doLogout()
+      window.location.reload()
+    },
+  })
 }
 
 const disclaimerRef = ref(null)

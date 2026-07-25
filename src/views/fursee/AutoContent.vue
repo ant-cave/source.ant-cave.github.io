@@ -71,7 +71,9 @@
 
     <n-card v-if="running" :title="`运行进度 ${currentStage}`" class="mb-12">
       <n-progress v-if="progress.total" type="line" :percentage="progressPct" indicator-placement="inside" style="margin-bottom:12px" />
-      <div v-for="(log, i) in logs" :key="i" class="log-line">{{ log }}</div>
+      <div class="log-box" ref="logBoxRef">
+        <div v-for="(log, i) in logs" :key="i" class="log-line">{{ log }}</div>
+      </div>
     </n-card>
 
     <template v-if="currentRun">
@@ -131,7 +133,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import {
   NCard, NButton, NProgress, NCollapse, NCollapseItem, NEmpty, NSpin,
   NSlider, NInputNumber, NSelect, NTooltip, useMessage, useDialog,
@@ -173,6 +175,14 @@ const historyRuns = ref([])
 const historyLoading = ref(true)
 const appendMode = ref(false)
 const appendTargetId = ref('')
+const logBoxRef = ref(null)
+
+watch(logs, async () => {
+  await nextTick()
+  if (logBoxRef.value) {
+    logBoxRef.value.scrollTop = logBoxRef.value.scrollHeight
+  }
+}, { deep: true })
 
 const progressPct = computed(() => progress.value.total ? Math.round((progress.value.current / progress.value.total) * 100) : 0)
 
@@ -401,6 +411,7 @@ onMounted(() => {
 .param-label { display:block; font-size:12px; color:#666; margin-bottom:4px; }
 .slider-val { margin-left:8px; color:#666; font-size:12px; }
 .log-line { font-size:12px; color:#666; padding:2px 0; font-family:monospace; }
+.log-box { max-height:240px; overflow-y:auto; background:#f7f8fa; border-radius:6px; padding:8px 12px; border:1px solid #eee; }
 .current-run-header { display:flex; justify-content:space-between; align-items:center; width:100%; }
 .result-toolbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
 .result-title { font-weight:600; font-size:13px; margin-bottom:4px; color:#333; }

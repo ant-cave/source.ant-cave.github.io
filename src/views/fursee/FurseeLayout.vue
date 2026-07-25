@@ -5,7 +5,7 @@
         <Disclaimer ref="disclaimerRef" />
         <div class="fursee-root">
           <n-layout style="height: 100vh">
-            <n-layout-header bordered style="height:50px;display:flex;align-items:center;padding:0 12px;background:#1a1a1a;gap:8px">
+            <n-layout-header bordered class="fursee-header-bar" style="height:50px;display:flex;align-items:center;padding:0 12px;background:#1a1a1a;gap:8px">
               <div style="font-size:15px;font-weight:700;color:#fff;letter-spacing:1px">Fursee</div>
               <div style="flex:1" />
               <template v-if="!authLoading">
@@ -16,7 +16,7 @@
                 </template>
               </template>
               <n-button quaternary size="tiny" style="color:#888" @click="showDisclaimer">使用须知</n-button>
-              <n-button quaternary style="color:#888;padding:4px 8px;font-size:12px" @click="goHome">← 返回首页</n-button>
+              <n-button quaternary style="color:#888;padding:4px 8px;font-size:12px" @click="goHome"><i class="ri-arrow-left-line" style="margin-right:2px"></i> 返回首页</n-button>
               <n-tag v-if="showWs" :type="wsConnected ? 'success' : 'error'" size="tiny" round>
                 {{ wsConnected ? '已连接' : '未连接' }}
               </n-tag>
@@ -105,4 +105,9 @@ function goHome() {
 .footer-line a { color:#666; text-decoration:none; }
 .footer-line a:hover { color:#333; text-decoration:underline; }
 .footer-sub { font-size:11px; color:#bbb; margin-top:2px; }
+@media (max-width:768px) {
+  .fursee-header-bar { flex-wrap:wrap; gap:4px; height:auto !important; min-height:50px; padding:6px 8px !important; }
+  .fursee-footer { padding:16px 8px 12px; }
+  .footer-line { font-size:11px; }
+}
 </style>

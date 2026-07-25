@@ -117,7 +117,7 @@
           </div>
         </template>
         <div class="result-toolbar">
-          <n-button type="primary" @click="downloadZip(currentRun.run_id)" :loading="zipping" size="small">📦 下载全部 (ZIP)</n-button>
+          <n-button type="primary" @click="downloadZip(currentRun.run_id)" :loading="zipping" size="small"><i class="ri-download-line" style="margin-right:4px"></i> 下载全部 (ZIP)</n-button>
         </div>
         <div v-for="entry in currentRun.entries" :key="entry.name" style="margin-top:10px">
           <div class="result-title">{{ entry.name }}</div>
@@ -142,10 +142,10 @@
         <n-collapse>
           <n-collapse-item v-for="run in historyRuns" :key="run.run_id" :title="`${run.run_id} · ${run.total || '?'} 张图片`" :name="run.run_id" display-directive="show">
             <div class="result-toolbar" style="margin-bottom:8px">
-              <n-button size="tiny" @click="downloadZip(run.run_id)" :loading="zipping">📦 下载全部 (ZIP)</n-button>
+              <n-button size="tiny" @click="downloadZip(run.run_id)" :loading="zipping"><i class="ri-download-line" style="margin-right:2px"></i> 下载全部 (ZIP)</n-button>
               <n-button size="tiny" @click="startAppend(run.run_id)" :disabled="running" style="margin-left:6px"><i class="ri-add-line" style="margin-right:2px"></i> 追加图片</n-button>
               <div style="flex:1" />
-              <n-button size="tiny" type="error" quaternary @click="confirmDeleteRun(run.run_id)">🗑 删除</n-button>
+              <n-button size="tiny" type="error" quaternary @click="confirmDeleteRun(run.run_id)"><i class="ri-delete-bin-line" style="margin-right:2px"></i> 删除</n-button>
             </div>
             <div v-for="entry in run.entries" :key="entry.name" style="margin-top:8px">
               <div class="result-title">{{ entry.name }}</div>
@@ -296,7 +296,7 @@ async function startAuto() {
   console.log(`[流水线] 启动一键分类，图片数=${uploadCount.value}，追加模式=${appendMode.value}`)
   running.value = true; logs.value = []; progress.value = { current: 0, total: 0 }
   currentRunId.value = ''; currentRun.value = null
-  currentStage.value = '📷 检测中'
+  currentStage.value = '检测中'
   try {
     const existingId = appendMode.value ? appendTargetId.value : ''
     const params = {
@@ -322,25 +322,25 @@ function handleProgress(e) {
     const pct = progress.value.total ? Math.round((e.current / e.total) * 100) : 0
     console.log(`[流水线] 进度: ${e.stage} → ${e.current}/${e.total} (${pct}%)`)
     progress.value = { current: e.current ?? 0, total: e.total ?? 0 }
-    if (e.stage?.includes('Step 1')) currentStage.value = '📷 检测中'
-    else if (e.stage?.includes('Step 2')) currentStage.value = '🧠 提取特征中'
-    else if (e.stage?.includes('Step 3')) currentStage.value = '🔗 聚类中'
+    if (e.stage?.includes('Step 1')) currentStage.value = '检测中'
+    else if (e.stage?.includes('Step 2')) currentStage.value = '提取特征中'
+    else if (e.stage?.includes('Step 3')) currentStage.value = '聚类中'
     logs.value.push(`${e.stage}: ${e.current}/${e.total}`)
   } else if (e.event === 'log') {
     console.log(`[流水线] 日志: ${e.message}`)
     logs.value.push(e.message ?? '')
   } else if (e.event === 'complete') {
     console.log(`[流水线] ✅ 全流程完成`)
-    currentStage.value = '✅ 完成'
+    currentStage.value = '完成'
     progress.value = { current: 1, total: 1 }
-    logs.value.push('✅ 全流程完成！')
+    logs.value.push('全流程完成！')
     msg.success('全流程完成！')
     running.value = false
     refreshAfterRun()
     loadQuota()
   } else if (e.event === 'error') {
     console.error(`[流水线] ❌ 错误: ${e.message}`)
-    logs.value.push(`❌ ${e.message}`)
+    logs.value.push(`错误: ${e.message}`)
     msg.error(e.message ?? '失败'); running.value = false
   }
 }
@@ -422,6 +422,13 @@ onMounted(() => {
   loadQuota()
   refreshTimer = setInterval(updateRefreshCountdown, 60000)
 })
+
+watch(authUser, (newUser, oldUser) => {
+  if (newUser && !oldUser) {
+    loadHistory()
+    loadQuota()
+  }
+})
 </script>
 
 <style scoped>
@@ -476,7 +483,23 @@ onMounted(() => {
 
 @media (max-width:768px) {
   .param-row { flex-direction:column; gap:0; }
-  .result-grid { grid-template-columns:repeat(3,1fr); }
-  .upload-area { padding:20px; }
+  .result-grid { grid-template-columns:repeat(3,1fr); gap:4px; }
+  .upload-area { padding:20px 12px; }
+  .upload-title { font-size:14px; }
+  .quota-bar { flex-direction:column; gap:6px; font-size:11px; padding:6px 10px; }
+  .quota-refresh { margin-left:0; }
+  .mode-banner { flex-wrap:wrap; font-size:12px; padding:8px 10px; }
+  .mode-banner span { flex:1; min-width:0; }
+  .login-gate-body { padding:16px 8px; }
+  .login-gate-icon { font-size:36px; }
+  .login-gate-title { font-size:16px; }
+  .login-gate-desc { font-size:12px; }
+  .action-bar .n-button { height:40px !important; font-size:15px !important; }
+  .current-run-header { flex-direction:column; gap:8px; align-items:flex-start !important; }
+  .result-toolbar { gap:6px; }
+  .result-toolbar .n-button { font-size:12px; }
+}
+@media (max-width:400px) {
+  .result-grid { grid-template-columns:repeat(2,1fr); }
 }
 </style>

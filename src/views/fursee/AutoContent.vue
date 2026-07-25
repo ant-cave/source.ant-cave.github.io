@@ -1,9 +1,36 @@
 <template>
   <div class="auto-page">
-    <n-card :title="appendMode ? '追加模式' : '傻瓜模式 — 一键分类'" class="mb-12" v-if="!running && !currentRunId">
+    <!-- 未登录提示 -->
+    <n-card v-if="!authUser && !authLoading" class="mb-12 login-gate">
+      <div class="login-gate-body">
+        <div class="login-gate-icon"><i class="ri-lock-line"></i></div>
+        <div class="login-gate-title">登录后使用智能分类</div>
+        <div class="login-gate-desc">
+          登录后可享受每日 2GB 上传额度与 8 次分类算力。<br>
+          您的图片数据仅用于分类处理，72 小时后自动清除，不会被用于其他用途。
+        </div>
+        <n-button type="primary" size="large" @click="doLogin" style="margin-top:12px">
+          <i class="ri-login-box-line" style="margin-right:4px"></i> 登录 / 注册
+        </n-button>
+      </div>
+    </n-card>
+
+    <!-- 主卡片：上传 + 分类 -->
+    <n-card v-if="authUser && !running && !currentRunId" :title="cardTitle" class="mb-12">
+      <!-- 模式提示条 -->
+      <div v-if="appendMode" class="mode-banner mode-banner-append">
+        <i class="ri-add-circle-line"></i>
+        <span>追加模式 — 将新图片合并到已有运行 <strong>{{ appendTargetId }}</strong></span>
+        <n-button size="tiny" quaternary @click="cancelAppend" style="margin-left:auto">取消追加</n-button>
+      </div>
+      <div v-else class="mode-banner mode-banner-new">
+        <i class="ri-file-add-line"></i>
+        <span>新建分类 — 上传图片后开始全新的一键识别分组</span>
+      </div>
+
       <div class="quota-bar">
-        <span><i class="ri-upload-cloud-line"></i> 剩余 {{ (quota.upload_limit_mb - quota.upload_used_mb).toFixed(0) }}MB / {{ quota.upload_limit_mb }}MB</span>
-        <span><i class="ri-play-circle-line"></i> 剩余 {{ quota.pipeline_limit - quota.pipeline_runs }}/{{ quota.pipeline_limit }}次</span>
+        <span><i class="ri-upload-cloud-line"></i> 上传额度 {{ (quota.upload_limit_mb - quota.upload_used_mb).toFixed(0) }}MB / {{ quota.upload_limit_mb }}MB</span>
+        <span><i class="ri-play-circle-line"></i> 分类次数 {{ quota.pipeline_limit - quota.pipeline_runs }}/{{ quota.pipeline_limit }}次</span>
         <span class="quota-refresh"><i class="ri-time-line"></i> {{ quotaRefreshIn }}</span>
         <n-tooltip trigger="hover" placement="bottom">
           <template #trigger>
@@ -12,7 +39,8 @@
           本服务为自搭服务器，算力有限，设置每日配额以保证所有用户都能正常使用。<br>配额每日 0:00 自动重置。
         </n-tooltip>
       </div>
-      <div class="step-desc" v-if="!appendMode">上传你的毛装角色照片，系统会自动检测、提取特征、聚类分组。完成后可直接下载分类好的 ZIP 压缩包。</div>
+
+      <div class="step-desc" v-if="!appendMode">上传毛装角色照片，系统自动检测、提取特征、聚类分组。完成后可直接下载分类好的 ZIP 压缩包。</div>
       <div class="step-desc" v-else>将新图片追加至已有运行，系统会合并检测并重新聚类。</div>
 
       <div
@@ -26,7 +54,7 @@
         <input ref="fileInput" type="file" multiple accept="image/*" style="display:none" @change="onFileChange" />
         <div class="upload-area" v-if="!uploading">
           <p class="upload-title">拖拽或点击上传待分类的图片</p>
-          <p class="upload-hint">JPG / PNG / WebP</p>
+          <p class="upload-hint">JPG / PNG / WebP · 支持批量上传</p>
         </div>
         <div class="upload-area" v-else>
           <n-progress type="line" :percentage="uploadPct" indicator-placement="inside" style="max-width:300px;margin:0 auto" />
@@ -42,16 +70,20 @@
       </div>
 
       <div v-if="uploadCount && !running" class="upload-summary">
-        已上传 {{ uploadCount }} 张图片
-        <span v-if="appendMode && appendTargetId" style="color:#999;margin-left:8px">（将追加至 {{ appendTargetId }}）</span>
+        <i class="ri-image-line"></i> 已准备 <strong>{{ uploadCount }}</strong> 张图片待分类
+        <span v-if="appendMode && appendTargetId" class="append-hint">→ 将追加至 {{ appendTargetId }}</span>
+      </div>
+
+      <div v-if="!uploadCount && !running" class="upload-hint-static">
+        <i class="ri-image-add-line"></i> 尚未上传图片，请拖拽或点击上方区域上传
       </div>
 
       <div v-if="uploadCount && !running" class="action-bar">
         <n-button v-if="appendMode" type="warning" size="large" @click="startAuto" block style="height:44px;font-size:16px">
-          + 追加识别
+          <i class="ri-add-circle-line" style="margin-right:4px"></i> 确认追加识别
         </n-button>
         <n-button v-else type="primary" size="large" @click="startAuto" block style="height:44px;font-size:16px">
-          🚀 开始一键分类
+          <i class="ri-play-line" style="margin-right:4px"></i> 开始一键分类
         </n-button>
         <n-collapse style="margin-top:8px">
           <n-collapse-item title="高级参数（可选）" name="p">
@@ -81,7 +113,7 @@
         <template #header>
           <div class="current-run-header">
             <span>当前运行 · {{ currentRun.run_id }} · {{ currentRun.total }} 张图片</span>
-            <n-button size="tiny" @click="resetCurrent">上传新图片</n-button>
+            <n-button size="tiny" @click="resetCurrent"><i class="ri-upload-2-line" style="margin-right:2px"></i> 上传新图片</n-button>
           </div>
         </template>
         <div class="result-toolbar">
@@ -111,7 +143,7 @@
           <n-collapse-item v-for="run in historyRuns" :key="run.run_id" :title="`${run.run_id} · ${run.total || '?'} 张图片`" :name="run.run_id" display-directive="show">
             <div class="result-toolbar" style="margin-bottom:8px">
               <n-button size="tiny" @click="downloadZip(run.run_id)" :loading="zipping">📦 下载全部 (ZIP)</n-button>
-              <n-button size="tiny" @click="startAppend(run.run_id)" :disabled="running" style="margin-left:6px">+ 追加</n-button>
+              <n-button size="tiny" @click="startAppend(run.run_id)" :disabled="running" style="margin-left:6px"><i class="ri-add-line" style="margin-right:2px"></i> 追加图片</n-button>
               <div style="flex:1" />
               <n-button size="tiny" type="error" quaternary @click="confirmDeleteRun(run.run_id)">🗑 删除</n-button>
             </div>
@@ -127,7 +159,7 @@
           </n-collapse-item>
         </n-collapse>
       </template>
-      <n-empty v-else description="暂无历史记录，拖拽或点击上传图片即可开始" style="margin:20px 0" />
+      <n-empty v-else description="暂无历史记录，上传图片后即可开始分类" style="margin:20px 0" />
     </n-card>
   </div>
 </template>
@@ -140,6 +172,7 @@ import {
 } from 'naive-ui'
 import { useApi } from '@/composables/useApi'
 import { useWs } from '@/composables/useWs'
+import { useAuth } from '@/composables/useAuth'
 
 const DEV = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
 const API_BASE = DEV ? '/fursee/api' : 'https://backend.api.011420.xyz/fursee/api'
@@ -149,6 +182,7 @@ const api = useApi()
 const msg = useMessage()
 const dialog = useDialog()
 const { connect } = useWs()
+const { user: authUser, loading: authLoading, login: doLogin } = useAuth()
 
 const fileInput = ref(null)
 const dragOver = ref(false)
@@ -176,6 +210,8 @@ const historyLoading = ref(true)
 const appendMode = ref(false)
 const appendTargetId = ref('')
 const logBoxRef = ref(null)
+
+const cardTitle = computed(() => appendMode.value ? '追加分类' : '智能分类 — 一键识别分组')
 
 watch(logs, async () => {
   await nextTick()
@@ -404,7 +440,11 @@ onMounted(() => {
 .quota-refresh { color:#999; margin-left:auto; }
 .quota-info { cursor:pointer; color:#999; margin-left:4px; font-size:13px; }
 .history-loading { display:flex; align-items:center; justify-content:center; gap:8px; padding:20px; color:#999; font-size:13px; }
-.upload-summary { margin:12px 0; font-size:13px; color:#666; }
+.upload-summary { margin:12px 0; font-size:14px; color:#333; display:flex; align-items:center; gap:6px; }
+.upload-summary i { color:#52c41a; font-size:16px; }
+.append-hint { color:#f0a020; font-size:12px; margin-left:4px; }
+.upload-hint-static { margin:12px 0; font-size:13px; color:#999; text-align:center; padding:8px; background:#fafafa; border-radius:6px; }
+.upload-hint-static i { margin-right:4px; }
 .action-bar { margin-top:16px; }
 .param-row { display:flex; gap:12px; margin-bottom:8px; }
 .param-item { flex:1; min-width:0; }
@@ -420,6 +460,20 @@ onMounted(() => {
 .result-img { width:100%; height:100px; object-fit:cover; display:block; }
 .result-label { padding:2px 4px; font-size:10px; color:#666; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .current-run { border:1px solid #333 !important; }
+
+/* 登录提示 */
+.login-gate { border:2px dashed #d9d9d9; }
+.login-gate-body { text-align:center; padding:24px 16px; }
+.login-gate-icon { font-size:48px; color:#ccc; margin-bottom:12px; }
+.login-gate-title { font-size:18px; font-weight:600; color:#333; margin-bottom:8px; }
+.login-gate-desc { font-size:13px; color:#888; line-height:1.8; }
+
+/* 模式提示条 */
+.mode-banner { display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:6px; margin-bottom:12px; font-size:13px; }
+.mode-banner i { font-size:16px; }
+.mode-banner-new { background:#e6f7ff; color:#1677ff; border:1px solid #91d5ff; }
+.mode-banner-append { background:#fff7e6; color:#d46b08; border:1px solid #ffd591; }
+
 @media (max-width:768px) {
   .param-row { flex-direction:column; gap:0; }
   .result-grid { grid-template-columns:repeat(3,1fr); }

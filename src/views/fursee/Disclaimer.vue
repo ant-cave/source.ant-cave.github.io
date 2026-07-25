@@ -9,7 +9,7 @@
         <li>您的图片数据不会出售、分享或传播给任何第三方</li>
       </ul>
       <p><strong>版权与许可</strong></p>
-      <p>Fursee &copy; Jundi Wu &middot; GUI Shell by ant-cave &middot; AGPL-3.0</p>
+      <p>Fursee &copy; Jundi Wu · GUI Shell by ant-cave · AGPL-3.0</p>
       <p class="disclaimer-footer">点击「我已了解」即表示接受上述条款</p>
     </div>
     <template #footer>
@@ -19,21 +19,28 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { NModal, NButton } from 'naive-ui'
 
-const visible = ref(false)
+const props = defineProps({ show: { type: Boolean, default: false } })
+const emit = defineEmits(['update:show'])
+
+const visible = ref(props.show)
+
+import { watch } from 'vue'
+watch(() => props.show, (v) => { visible.value = v })
+watch(visible, (v) => { emit('update:show', v) })
 
 function accept() {
   visible.value = false
   localStorage.setItem('fursee_disclaimer', '1')
 }
 
-onMounted(() => {
-  if (!localStorage.getItem('fursee_disclaimer')) {
-    visible.value = true
-  }
-})
+function open() {
+  visible.value = true
+}
+
+defineExpose({ open })
 </script>
 
 <style scoped>

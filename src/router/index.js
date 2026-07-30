@@ -40,6 +40,11 @@ const router = createRouter({
       name: 'JpgCompress',
       component: () => import('../views/JpgCompress.vue'),
     },
+    {
+      path: '/fastcurl',
+      name: 'Fastcurl',
+      beforeEnter: () => { window.location.href = 'https://ant-cave.github.io/fastcurl/'; },
+    },
   ],
 })
 

@@ -58,7 +58,11 @@
         </div>
         <div class="upload-area" v-else>
           <n-progress type="line" :percentage="uploadPct" indicator-placement="inside" style="max-width:300px;margin:0 auto" />
-          <div class="upload-phase" v-if="uploadPhase === 'upload'">
+          <div class="upload-phase" v-if="uploadPhase === 'compress'">
+            <n-spin :size="14" />
+            正在压缩图片…
+          </div>
+          <div class="upload-phase" v-else-if="uploadPhase === 'upload'">
             <i class="ri-upload-2-line"></i> 正在上传到服务器…
           </div>
           <div class="upload-phase" v-else-if="uploadPhase === 'server'">
@@ -124,15 +128,15 @@
               <div style="flex:1" />
               <n-button size="tiny" type="error" quaternary @click="confirmDeleteRun(run.run_id)"><i class="ri-delete-bin-line" style="margin-right:2px"></i> 删除</n-button>
             </div>
-            <div v-for="entry in run.entries" :key="entry.name" style="margin-top:8px">
-              <div class="result-title">{{ entry.name }}</div>
-              <div class="result-grid">
-                <div v-for="img in entry.images" :key="img" class="result-img-wrap">
-                  <img loading="lazy" :src="`${IMG_BASE}/results/auto/run/${run.run_id}/image/${entry.name}/${encodeURIComponent(img)}?thumb=1`" :alt="img" class="result-img" />
-                  <div class="result-label">{{ img }}</div>
+              <div v-for="entry in run.entries" :key="entry.name" style="margin-top:8px">
+                <div class="result-title">{{ entry.name }}</div>
+                <div class="result-grid">
+                  <div v-for="img in entry.images" :key="img" class="result-img-wrap">
+                    <img loading="lazy" :src="imageSrc(run.run_id, entry.name, img)" :alt="img" class="result-img" />
+                    <div class="result-label">{{ img }}</div>
+                  </div>
                 </div>
               </div>
-            </div>
           </n-collapse-item>
         </n-collapse>
       </template>
@@ -147,6 +151,7 @@ import {
   NCard, NButton, NProgress, NCollapse, NCollapseItem, NEmpty, NSpin,
   NSlider, NInputNumber, NSelect, NTooltip, useMessage, useDialog,
 } from 'naive-ui'
+import JSZip from 'jszip'
 import { useApi } from '@/composables/useApi'
 import { useWs } from '@/composables/useWs'
 import { useAuth } from '@/composables/useAuth'
@@ -183,12 +188,15 @@ const zipping = ref(false)
 const currentRunId = ref('')
 const currentRun = ref(null)
 const historyRuns = ref([])
-const historyLoading = ref(true)
+const historyLoading = ref(false)
 const expandedHistoryRunId = ref('')
 const historySectionRef = ref(null)
 const appendMode = ref(false)
 const appendTargetId = ref('')
 const logBoxRef = ref(null)
+
+// 本地图片缓存：serverName → { url, blob }（会话内存，刷新即丢）
+const localFiles = new Map()
 
 const cardTitle = computed(() => appendMode.value ? '追加分类' : '智能分类 — 一键识别分组')
 
@@ -201,7 +209,7 @@ watch(logs, async () => {
 
 const progressPct = computed(() => progress.value.total ? Math.round((progress.value.current / progress.value.total) * 100) : 0)
 
-const quota = ref({ upload_used_mb: 0, upload_limit_mb: 2048, pipeline_runs: 0, pipeline_limit: 8 })
+const quota = ref({ upload_used_mb: 0, upload_limit_mb: 1024, pipeline_runs: 0, pipeline_limit: 5 })
 const quotaRefreshIn = ref('')
 
 async function loadQuota() {
@@ -229,21 +237,20 @@ function updateRefreshCountdown() {
 
 let refreshTimer = null
 
-const appendOptions = computed(() =>
-  historyRuns.value.map(r => ({ label: `${r.run_id}（${r.total || '?'}张）`, value: r.run_id }))
-)
-
 async function doUpload(files) {
   const arr = Array.from(files).filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f.name))
   const rejected = Array.from(files).filter(f => !/\.(jpg|jpeg|png|webp)$/i.test(f.name))
   if (rejected.length) console.warn(`[上传] 跳过 ${rejected.length} 个不支持的文件: ${rejected.map(f => f.name).join(', ')}`)
   if (!arr.length) return
   console.log(`[上传] 开始上传流程，有效文件 ${arr.length} 张`)
-  uploading.value = true; uploadPct.value = 0; uploadPhase.value = 'upload'
+  uploading.value = true; uploadPct.value = 0; uploadPhase.value = 'compress'
   const startTime = Date.now()
   try {
     const uploadTask = api.uploadImages('auto_uploads', arr, (p, phase) => {
-      if (phase === 'upload') {
+      if (phase === 'compress') {
+        uploadPhase.value = 'compress'
+        uploadPct.value = p
+      } else if (phase === 'upload') {
         uploadPhase.value = 'upload'
         uploadPct.value = p
       } else if (phase === 'server') {
@@ -253,10 +260,14 @@ async function doUpload(files) {
         uploadPct.value = 100
       }
     })
-    await uploadTask
-    uploadCount.value += arr.length
+    const res = await uploadTask
+    // 记录本地压缩图，供结果展示与本地 ZIP 打包
+    for (const lf of res.localFiles || []) {
+      localFiles.set(lf.serverName, { url: lf.url, blob: lf.blob })
+    }
+    uploadCount.value += (res.localFiles || []).length
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
-    console.log(`[上传] 上传流程完成，累计 ${uploadCount.value} 张，总耗时 ${elapsed}s`)
+    console.log(`[上传] 上传流程完成，累计 ${uploadCount.value} 张，本地缓存 ${localFiles.size} 张，总耗时 ${elapsed}s`)
     loadQuota()
   } catch (e) {
     console.error(`[上传] 上传流程失败: ${e.message}`)
@@ -317,7 +328,7 @@ function handleProgress(e) {
     msg.success('全流程完成！')
     uploadCount.value = 0
     running.value = false
-    refreshAfterRun()
+    refreshAfterRun(e.output)
     loadQuota()
   } else if (e.event === 'error') {
     console.error(`[流水线] ❌ 错误: ${e.message}`)
@@ -326,59 +337,82 @@ function handleProgress(e) {
   }
 }
 
-async function refreshAfterRun() {
-  uploadCount.value = 0
-  await loadHistory()
-  if (historyRuns.value.length) {
-    const latest = historyRuns.value.reduce((a, b) => (a.timestamp > b.timestamp ? a : b))
-    expandedHistoryRunId.value = latest.run_id
-    currentRunId.value = ''
-    currentRun.value = null
-    await nextTick()
+function imageSrc(runId, entryName, img) {
+  // 优先使用本地压缩图（会话内存），找不到时回退服务器缩略图（追加老 run 场景）
+  const local = localFiles.get(img)
+  if (local) return local.url
+  return `${IMG_BASE}/results/auto/run/${runId}/image/${entryName}/${encodeURIComponent(img)}?thumb=1`
+}
+
+function refreshAfterRun(output) {
+  const run = {
+    run_id: output?.run_id,
+    timestamp: Date.now() / 1000,
+    entries: output?.entries || [],
+    total: output?.total || 0,
+  }
+  // 追加模式：更新已有 run，否则新增
+  const idx = historyRuns.value.findIndex(r => r.run_id === run.run_id)
+  if (idx >= 0) {
+    historyRuns.value[idx] = run
+  } else {
+    historyRuns.value.push(run)
+  }
+  expandedHistoryRunId.value = run.run_id
+  currentRunId.value = ''
+  currentRun.value = null
+  nextTick(() => {
     const el = document.getElementById('history-section')
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
+  })
 }
 
 async function loadHistory() {
-  historyLoading.value = true
-  try {
-    console.log('[历史] 开始加载历史记录...')
-    const data = await api.getAutoHistory()
-    console.log('[历史] API返回数据:', JSON.stringify(data).slice(0, 500))
-    console.log('[历史] data.runs类型:', typeof data.runs, '长度:', data.runs?.length)
-    historyRuns.value = data.runs || []
-    console.log('[历史] historyRuns设置完成，长度:', historyRuns.value.length)
-  } catch (e) {
-    console.error('[历史] 加载失败:', e.message || e)
-  } finally {
-    historyLoading.value = false
-  }
+  // 单次会话制：历史仅保留当前会话内存中的运行，不向服务器拉取
+  historyLoading.value = false
 }
 
 function confirmDeleteRun(runId) {
   dialog.warning({
     title: '确认删除',
-    content: `确定要删除运行 ${runId} 吗？对应文件将一并清除。`,
+    content: `确定要删除运行 ${runId} 吗？（仅移除当前会话记录）`,
     positiveText: '删除',
     negativeText: '取消',
     onPositiveClick: async () => {
-      try {
-        await api.deleteRun(runId)
-        msg.success('已删除')
-        await loadHistory()
-      } catch (e) { msg.error(e.message) }
+      historyRuns.value = historyRuns.value.filter(r => r.run_id !== runId)
+      if (expandedHistoryRunId.value === runId) expandedHistoryRunId.value = ''
+      msg.success('已删除')
     },
   })
 }
 
 async function downloadZip(runId) {
+  const run = historyRuns.value.find(r => r.run_id === runId)
+  if (!run) return
   zipping.value = true
   try {
+    const zip = new JSZip()
+    let added = 0
+    for (const entry of run.entries || []) {
+      const folder = zip.folder(entry.name)
+      for (const img of entry.images || []) {
+        const local = localFiles.get(img)
+        if (local) {
+          folder.file(img, local.blob)
+          added++
+        }
+      }
+    }
+    if (!added) {
+      msg.warning('当前会话没有可用于打包的本地图片')
+      return
+    }
+    const blob = await zip.generateAsync({ type: 'blob' })
     const a = document.createElement('a')
-    a.href = `${API_BASE}/classified/${runId}/zip`
+    a.href = URL.createObjectURL(blob)
     a.download = `auto_${runId}.zip`
     a.click()
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000)
   } catch (e) { msg.error(e.message) }
   finally { zipping.value = false }
 }
@@ -406,14 +440,12 @@ function resetCurrent() {
 }
 
 onMounted(() => {
-  loadHistory()
   loadQuota()
   refreshTimer = setInterval(updateRefreshCountdown, 60000)
 })
 
 watch(authUser, (newUser, oldUser) => {
   if (newUser && !oldUser) {
-    loadHistory()
     loadQuota()
   }
 })

@@ -14,10 +14,16 @@ const tools = [
   { id: "fursee", title: "Fursee", desc: "毛装角色一键分类", icon: "ri-search-eye-line", link: "/fursee" },
   { id: "jpg-compress", title: "JPG 压缩", desc: "在线压缩 JPG 图片", icon: "ri-file-zip-line", link: "/tools/jpg-compress" },
   { id: "fastcurl", title: "fastcurl", desc: "图形化 curl 工具", icon: "ri-global-line", link: "/fastcurl" },
+  { id: "toolkit", title: "Toolkit", desc: "便捷工具箱", icon: "ri-tools-line", link: "https://toolkit.011420.xyz", external: true },
 ];
 
 function goTo(tool) {
-  if (tool.link) router.push(tool.link);
+  if (!tool.link) return;
+  if (tool.external) {
+    window.open(tool.link, "_blank", "noopener,noreferrer");
+  } else {
+    router.push(tool.link);
+  }
 }
 </script>
 
